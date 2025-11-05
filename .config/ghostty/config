@@ -17,4 +17,6 @@ font-size = 16
 background-opacity = 0.9
 background-blur = true
 window-padding-x = 10
-theme = Catppuccin Frappe
+window-height = 40
+window-width = 120
+theme = Catppuccin Macchiato
