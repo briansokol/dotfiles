@@ -108,7 +108,6 @@ alias gas='git add . && git status'
 alias bb='bbedit'
 alias npmlg='npm list -g --depth=0'
 alias ls='ls --color'
-alias cd='z'
 
 # Yarn shortcuts
 alias ya='yarn add --exact'
@@ -129,7 +128,6 @@ alias pr='pnpm remove'
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-eval "$(gh copilot alias -- zsh)"
 
 # Add Visual Studio Code (code)
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
