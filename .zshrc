@@ -29,6 +29,7 @@ zinit ice depth=1; zinit light romkatv/powerlevel10k
 zinit light zsh-users/zsh-syntax-highlighting
 zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
+zinit light Aloxaf/fzf-tab
 
 # Add in snippets
 zinit snippet OMZL::git.zsh
@@ -63,6 +64,8 @@ setopt hist_find_no_dups
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
 # Run nvm autoload
 export NVM_DIR="$HOME/.nvm"
@@ -95,18 +98,17 @@ export EDITOR=nano
 
 # General Shortcuts
 alias degit='rm -rf ./.git'
-alias update-all='source ~/Library/Mobile\ Documents/com~apple~CloudDocs/bin/update-all-dependencies.sh'
-alias merge-dev='sh ~/Library/Mobile\ Documents/com~apple~CloudDocs/bin/merge-develop.sh'
-alias merge-main='sh ~/Library/Mobile\ Documents/com~apple~CloudDocs/bin/merge-main.sh'
-alias merge-release='sh ~/Library/Mobile\ Documents/com~apple~CloudDocs/bin/merge-release.sh'
-alias rebase-main='sh ~/Library/Mobile\ Documents/com~apple~CloudDocs/bin/rebase-main.sh'
-alias git-pull='sh ~/Library/Mobile\ Documents/com~apple~CloudDocs/bin/git-pull.sh'
-alias git-fetch='sh ~/Library/Mobile\ Documents/com~apple~CloudDocs/bin/git-fetch.sh'
+alias update-all='source ~/.scripts/update-all-dependencies.sh'
+alias merge-dev='sh ~/.scripts/merge-main.sh --branch develop'
+alias merge-main='sh ~/.scripts/merge-main.sh'
+alias rebase-main='sh ~/.scripts/rebase-main.sh'
+alias rebase-main-dry-run='sh ~/.scripts/rebase-main.sh --dry-run'
 alias git-clean='git branch --merged | grep -v \* | xargs git branch -d'
 alias gas='git add . && git status'
 alias bb='bbedit'
 alias npmlg='npm list -g --depth=0'
 alias ls='ls --color'
+alias cd='z'
 
 # Yarn shortcuts
 alias ya='yarn add --exact'
@@ -123,8 +125,10 @@ alias pa='pnpm add --save-exact'
 alias pad='pnpm add --save-exact --save-dev'
 alias pr='pnpm remove'
 
+# Shell Integrations
+eval "$(fzf --zsh)"
+eval "$(zoxide init --cmd cd zsh)"
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
 eval "$(gh copilot alias -- zsh)"
 
 # Add Visual Studio Code (code)

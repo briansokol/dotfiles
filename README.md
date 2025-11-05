@@ -33,6 +33,14 @@ Arch Linux (and maybe Git Bash) using Pacman:
 sudo pacman -S stow
 ```
 
+## Install fzf
+
+Follow the instructions on the [GitHub page](https://github.com/junegunn/fzf) to install fzf.
+
+## Install Zoxide
+
+Follow the instructions on the [GitHub page](https://github.com/ajeetdsouza/zoxide) to install Zoxide.
+
 ## Install Dotfiles
 
 If this repo is checked out into your home directory:
