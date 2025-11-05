@@ -1,50 +1,49 @@
 # dotfiles
 
-All my dotfiles, ready to be installed and synced with Mackup.
+All my dotfiles, ready to be installed and synced with Stow.
 
-## Install Mackup
+## Install Stow
 
-If you're on a Mac, use Homebrew:
-
-```zsh
-brew install mackup
-```
-
-If you're on Linux, use PIP:
+Mac using Homebrew:
 
 ```zsh
-pip install --upgrade mackup
+brew install stow
 ```
 
-## Setup Mackup
-
-Create a Mackup config file:
+Debian/Ubuntu using apt:
 
 ```zsh
-nano ~/.mackup.cfg
+sudo apt update
+sudo apt install stow
 ```
 
-Add these contents, changing the path as appropriate:
+Fedora, RHEL, or CentOS using Yum:
 
-```ini
-[storage]
-engine = file_system
-path = {path/to/this/repo}/dotfiles
-
-[applications_to_sync]
-git
-homebrew
-nvm
-p10k
-zsh
+```zsh
+sudo yum install stow
 ```
 
-If the path does not have a starting slash, it will be relative to the user directory.
+Or using DNF:
+```zsh
+sudo dnf install stow
+```
+
+Arch Linux (and maybe Git Bash) using Pacman:
+```zsh
+sudo pacman -S stow
+```
 
 ## Install Dotfiles
 
+If this repo is checked out into your home directory:
 ```zsh
-mackup restore
+cd ~/dotfiles
+stow .
+```
+
+Otherwise, `cd` into the dotfiles folder and run:
+```zsh
+stow ~
 ```
 
 ## Syncing Changed Dotfiles
@@ -57,12 +56,12 @@ mackup restore
 If you need to uninstall this repo:
 
 ```zsh
-mackup uninstall
+cd ~
+stow --delete
 ```
 
 ## Adding New Dotfiles
 
-1. Update the `.mackup.cfg` file to list the new application to sync.
-2. Run `mackup backup` to add new files to the repo.
-3. Commit changes to the main branch.
-4. On other computers, pull changes.
+1. Commit new files to the main branch.
+2. On other computers, pull changes.
+3. Run the stow install commands above.
