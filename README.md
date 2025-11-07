@@ -43,15 +43,17 @@ Follow the instructions on the [GitHub page](https://github.com/ajeetdsouza/zoxi
 
 ## Install Dotfiles
 
-If this repo is checked out into your home directory:
+If this repo is checked out into your home directory, `cd` into the dotfiles repo and run the `stow` command for each package you want to install.
 ```zsh
 cd ~/dotfiles
-stow .
+stow zsh
+stow ghostty
+stow nvm
 ```
 
 Otherwise, `cd` into the dotfiles folder and run:
 ```zsh
-stow ~
+stow <package> --target=$HOME
 ```
 
 ## Syncing Changed Dotfiles
