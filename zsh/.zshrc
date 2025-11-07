@@ -93,7 +93,7 @@ DEFAULT_USER=$(whoami)
 
 # BASH_PROFILE CONFIGS
 
-export EDITOR=nano
+export EDITOR=micro
 
 #export JAVA_HOME=$(/usr/libexec/java_home -v 11)
 #export PATH=$JAVA_HOME/bin:$PATH
@@ -110,6 +110,7 @@ alias gas='git add . && git status'
 alias bb='bbedit'
 alias npmlg='npm list -g --depth=0'
 alias ls='ls --color'
+alias mi='micro'
 
 # Yarn shortcuts
 alias ya='yarn add --exact'
