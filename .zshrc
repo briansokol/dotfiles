@@ -125,11 +125,15 @@ alias pad='pnpm add --save-exact --save-dev'
 alias pr='pnpm remove'
 
 # Shell Integrations
-eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
+if [[ ! "$PATH" == *$HOME/.fzf/bin* ]]; then
+  PATH="${PATH:+${PATH}:}$HOME/.fzf/bin"
+fi
+source <(fzf --zsh)
+command -v zoxide &>/dev/null && eval "$(zoxide init --cmd cd zsh)"
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 # Add Visual Studio Code (code)
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
 [[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
+
