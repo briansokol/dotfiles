@@ -93,36 +93,52 @@ DEFAULT_USER=$(whoami)
 
 # BASH_PROFILE CONFIGS
 
-export EDITOR=micro
+if (( $+commands[micro] )); then
+  export EDITOR=micro
+else
+  export EDITOR=nano
+fi
 
 #export JAVA_HOME=$(/usr/libexec/java_home -v 11)
 #export PATH=$JAVA_HOME/bin:$PATH
 
-# General Shortcuts
-alias degit='rm -rf ./.git'
+# General Aliases
 alias update-all='source ~/.scripts/update-all-dependencies.sh'
+alias bb='bbedit'
+alias npmlg='npm list -g --depth=0'
+
+# Git Aliases
+alias degit='rm -rf ./.git'
 alias merge-dev='sh ~/.scripts/merge-main.sh --branch develop'
 alias merge-main='sh ~/.scripts/merge-main.sh'
 alias rebase-main='sh ~/.scripts/rebase-main.sh'
 alias rebase-main-dry-run='sh ~/.scripts/rebase-main.sh --dry-run'
 alias git-clean='git branch --merged | grep -v \* | xargs git branch -d'
 alias gas='git add . && git status'
-alias bb='bbedit'
-alias npmlg='npm list -g --depth=0'
-alias ls='ls --color'
-alias mi='micro'
 
-# Yarn shortcuts
+# Micro Alias
+(( $+commands[micro] )) && alias mi='micro'
+
+# Eza Aliases
+if (( $+commands[eza] )); then
+  alias ls='eza --icons=always --group-directories-first --color=always'
+  alias la='eza --icons=always --group-directories-first -lhgmUa --time-style=long-iso --git --color=always'
+else
+  alias ls='ls --color'
+  alias la='ls -la --color'
+fi
+
+# Yarn Aliases
 alias ya='yarn add --exact'
 alias yad='yarn add --exact --dev'
 alias yr='yarn remove'
 
-# npm shortcuts
+# npm Aliases
 alias ni='npm install --save-exact'
 alias nid='npm install --save-exact --save-dev'
 alias nu='npm uninstall'
 
-# pnpm shortcuts
+# pnpm Aliases
 alias pa='pnpm add --save-exact'
 alias pad='pnpm add --save-exact --save-dev'
 alias pr='pnpm remove'
