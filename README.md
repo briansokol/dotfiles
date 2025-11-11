@@ -33,22 +33,50 @@ Arch Linux (and maybe Git Bash) using Pacman:
 sudo pacman -S stow
 ```
 
-## Install fzf
+## Install Required Tools
 
-Follow the instructions on the [GitHub page](https://github.com/junegunn/fzf) to install fzf.
+### fzf
 
-## Install Zoxide
+Follow the instructions on the [GitHub page](https://github.com/junegunn/fzf) to install fzf, a tool for fuzzy filename matching.
 
-Follow the instructions on the [GitHub page](https://github.com/ajeetdsouza/zoxide) to install Zoxide.
+### Zoxide
+
+Follow the instructions on the [GitHub page](https://github.com/ajeetdsouza/zoxide) to install Zoxide, a tool to enable shortcuts when changing directories.
+
+## Install Optional Tools
+
+### Eza
+
+Follow the instructions on the [GitHub page](https://github.com/eza-community/eza/blob/main/INSTALL.md) to install Eza, a tool to replace the ls command.
+
+### Micro
+
+Follow the instructions on the [GitHub page](https://github.com/zyedidia/micro#package-managers) to install Micro, a modern simple text editor.
+
+## Install Tmux
+
+Follow the instructions on the [GitHub wiki page](https://github.com/tmux/tmux/wiki/Installing) to install Tmux.
+
+### Install Tmux Plugin Manager
+
+```zsh
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+```
 
 ## Install Dotfiles
 
-If this repo is checked out into your home directory, `cd` into the dotfiles repo and run the `stow` command for each package you want to install.
+If this repo is cloned into your home directory, `cd` into the dotfiles repo and run the `stow` command for each package you want to install.
 ```zsh
 cd ~/dotfiles
 stow zsh
-stow ghostty
+stow iterm
+stow tmux
 stow nvm
+```
+
+In order to prevent symlinks from being made to entire folders, you can run (for example):
+```zsh
+stow --no-folding tmux
 ```
 
 Otherwise, `cd` into the dotfiles folder and run:
@@ -63,11 +91,11 @@ stow <package> --target=$HOME
 
 ## Revert dotfiles to Originals
 
-If you need to uninstall this repo:
+If you need to uninstall this repo, go to the dotfiles repo and run the delete command:
 
 ```zsh
-cd ~
-stow --delete
+cd ~/dotfiles
+stow --delete <package>
 ```
 
 ## Adding New Dotfiles

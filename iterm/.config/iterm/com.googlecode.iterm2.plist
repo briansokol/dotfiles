@@ -895,7 +895,7 @@
 				<real>0.99697142839431763</real>
 			</dict>
 			<key>Minimum Contrast</key>
-			<real>0.20000000000000001</real>
+			<real>0.0</real>
 			<key>Mouse Reporting</key>
 			<true/>
 			<key>Name</key>
@@ -1424,6 +1424,8 @@
 	<real>604800</real>
 	<key>TmuxDashboardLimit</key>
 	<integer>10</integer>
+	<key>TmuxUsesDedicatedProfile</key>
+	<true/>
 	<key>ToolbeltTools</key>
 	<array>
 		<string>Paste History</string>
