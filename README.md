@@ -33,6 +33,10 @@ Arch Linux (and maybe Git Bash) using Pacman:
 sudo pacman -S stow
 ```
 
+## Install Starship
+
+Follow the [installation guide](https://starship.rs/guide/) to install Starship to make the terminal look awesome.
+
 ## Install Required Tools
 
 ### fzf
