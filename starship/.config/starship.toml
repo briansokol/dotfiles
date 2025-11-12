@@ -163,9 +163,9 @@ vimcmd_replace_symbol = '[❮](bold fg:lavender)'
 vimcmd_visual_symbol = '[❮](bold fg:yellow)'
 
 [cmd_duration]
-show_milliseconds = true
-format = "$duration"
+show_milliseconds = false
 style = "bg:lavender"
+format = '[[  $duration ](fg:crust bg:lavender)]($style)'
 disabled = false
 show_notifications = true
 
