@@ -89,6 +89,7 @@ fi
 # [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Load Starship if installed
+STARSHIP_CONFIG=${XDG_CONFIG_HOME}/starship.toml
 command -v starship &>/dev/null && eval "$(starship init zsh)"
 
 # User configuration
