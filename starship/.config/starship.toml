@@ -1,14 +1,18 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
+command_timeout = 5000
+
 format = """
-[](sapphire)\
+[](surface0)\
 $os\
-[](bg:surface0 fg:sapphire)\
-$directory\
+$username\
 [](bg:blue fg:surface0)\
+$directory\
+[](bg:mauve fg:blue)\
 $git_branch\
+$git_state\
 $git_status\
-[](bg:green fg:blue)\
+[](bg:teal fg:mauve)\
 $c\
 $rust\
 $golang\
@@ -18,12 +22,13 @@ $java\
 $kotlin\
 $haskell\
 $python\
-[ ](green)\
+[](teal)\
 $fill\
-[](lavender)\
+[](yellow)\
 $cmd_duration\
+[](fg:red bg:yellow)\
 $battery\
-[](fg:surface0 bg:lavender)\
+[](fg:surface0 bg:red)\
 $time\
 [](surface0)\
 $line_break\
@@ -36,7 +41,7 @@ symbol = ' '
 
 [os]
 disabled = false
-style = "bg:sapphire fg:crust"
+style = "bg:surface0 fg:blue"
 
 [os.symbols]
 Windows = ""
@@ -61,94 +66,85 @@ Redhat = "󱄛"
 RedHatEnterprise = "󱄛"
 
 [username]
-show_always = true
-style_user = "bg:red fg:crust"
-style_root = "bg:red fg:crust"
-format = '[ $user]($style)'
+show_always = false
+style_user = "bg:surface0 fg:blue"
+style_root = "bg:surface0 fg:red"
+format = '[ $user ]($style)'
 
 [directory]
-style = "bg:surface0 fg:blue"
+style = "bg:blue fg:crust"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
 
-[directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = " "
-"Music" = "󰝚 "
-"Pictures" = " "
-"Developer" = "󰲋 "
-
 [git_branch]
 symbol = ""
-style = "bg:blue"
-format = '[[ $symbol $branch ](fg:crust bg:blue)]($style)'
+style = "bg:mauve"
+format = '[[ $symbol $branch ](fg:crust bg:mauve)]($style)'
 
 [git_status]
-style = "bg:blue"
-format = '[[($all_status$ahead_behind )](fg:crust bg:blue)]($style)'
+style = "bg:mauve"
+format = '[[($all_status$ahead_behind )](fg:crust bg:mauve)]($style)'
+
+[git_state]
+style = "bg:mauve"
+format = '[ $state ]($style)'
 
 [nodejs]
 symbol = ""
-style = "bg:green"
-format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [c]
 symbol = " "
-style = "bg:green"
-format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [rust]
 symbol = ""
-style = "bg:green"
-format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [golang]
 symbol = ""
-style = "bg:green"
-format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [php]
 symbol = ""
-style = "bg:green"
-format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [java]
 symbol = " "
-style = "bg:green"
-format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [kotlin]
 symbol = ""
-style = "bg:green"
-format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [haskell]
 symbol = ""
-style = "bg:green"
-format = '[[ $symbol( $version) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [python]
 symbol = ""
-style = "bg:green"
-format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:crust bg:green)]($style)'
+style = "bg:teal"
+format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:crust bg:teal)]($style)'
 
 [docker_context]
 symbol = ""
 style = "bg:sapphire"
 format = '[[ $symbol( $context) ](fg:crust bg:sapphire)]($style)'
 
-[conda]
-symbol = "  "
-style = "fg:crust bg:sapphire"
-format = '[$symbol$environment ]($style)'
-ignore_base = false
-
 [time]
 disabled = false
 time_format = "%I:%M%P"
 style = "bg:surface0"
-format = '[[  $time ](fg:lavender bg:surface0)]($style)'
+format = '[[  $time ](fg:pink bg:surface0)]($style)'
 
 [line_break]
 disabled = false
@@ -164,10 +160,14 @@ vimcmd_visual_symbol = '[❮](bold fg:yellow)'
 
 [cmd_duration]
 show_milliseconds = false
-style = "bg:lavender"
-format = '[[  $duration ](fg:crust bg:lavender)]($style)'
+style = "bg:yellow"
+format = '[[  $duration ](fg:crust bg:yellow)]($style)'
 disabled = false
 show_notifications = true
+
+[battery]
+format = '[ $symbol$percentage ]($style)'
+display = [{ threshold = 50, style = "bg:red fg:crust" }]
 
 [palettes.catppuccin_mocha]
 rosewater = "#f5e0dc"
