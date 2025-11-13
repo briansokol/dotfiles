@@ -58,6 +58,9 @@ print_skip() {
 # Track what was updated
 UPDATED_ITEMS=()
 SKIPPED_ITEMS=()
+NPM_UPDATED_PACKAGES=()
+BREW_UPDATED_FORMULAE=()
+BREW_UPDATED_CASKS=()
 
 # Load NVM if available
 export NVM_DIR="$HOME/.nvm"
@@ -98,6 +101,10 @@ updateNpmOutdated () {
         fi
         print_info "Upgrading → $package"
         npm -g install --quiet "$package"
+
+        # Extract package name (without version)
+        package_name="${package%@*}"
+        NPM_UPDATED_PACKAGES+=("$package_name")
     done
 
     print_success "Global packages updated"
@@ -147,9 +154,23 @@ if command_exists brew; then
     brew update
 
     print_info "Upgrading formulae..."
+    # Capture the list of outdated formulae before upgrading
+    outdated_formulae=$(brew outdated --formula --quiet 2>/dev/null || true)
+    if [[ -n "$outdated_formulae" ]]; then
+        while IFS= read -r formula; do
+            BREW_UPDATED_FORMULAE+=("$formula")
+        done <<< "$outdated_formulae"
+    fi
     brew upgrade
 
     print_info "Upgrading casks..."
+    # Capture the list of outdated casks before upgrading
+    outdated_casks=$(brew outdated --cask --quiet 2>/dev/null || true)
+    if [[ -n "$outdated_casks" ]]; then
+        while IFS= read -r cask; do
+            BREW_UPDATED_CASKS+=("$cask")
+        done <<< "$outdated_casks"
+    fi
     brew upgrade --cask
 
     print_info "Cleaning up old versions..."
@@ -246,6 +267,30 @@ if [[ ${#UPDATED_ITEMS[@]} -gt 0 ]]; then
     echo "${BOLD}${GREEN}Updated:${RESET}"
     for item in "${UPDATED_ITEMS[@]}"; do
         echo "  ${GREEN}✓${RESET} $item"
+    done
+fi
+
+# Display detailed npm packages that were updated
+if [[ ${#NPM_UPDATED_PACKAGES[@]} -gt 0 ]]; then
+    echo "\n${BOLD}${GREEN}npm packages updated (${#NPM_UPDATED_PACKAGES[@]}):${RESET}"
+    for package in "${NPM_UPDATED_PACKAGES[@]}"; do
+        echo "  ${GREEN}✓${RESET} $package"
+    done
+fi
+
+# Display detailed Homebrew formulae that were updated
+if [[ ${#BREW_UPDATED_FORMULAE[@]} -gt 0 ]]; then
+    echo "\n${BOLD}${GREEN}Homebrew formulae updated (${#BREW_UPDATED_FORMULAE[@]}):${RESET}"
+    for formula in "${BREW_UPDATED_FORMULAE[@]}"; do
+        echo "  ${GREEN}✓${RESET} $formula"
+    done
+fi
+
+# Display detailed Homebrew casks that were updated
+if [[ ${#BREW_UPDATED_CASKS[@]} -gt 0 ]]; then
+    echo "\n${BOLD}${GREEN}Homebrew casks updated (${#BREW_UPDATED_CASKS[@]}):${RESET}"
+    for cask in "${BREW_UPDATED_CASKS[@]}"; do
+        echo "  ${GREEN}✓${RESET} $cask"
     done
 fi
 
