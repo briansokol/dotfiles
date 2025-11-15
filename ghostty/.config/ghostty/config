@@ -12,8 +12,8 @@
 # reloaded while running; some only apply to new windows and others may require
 # a full restart to take effect.
 
-font-family = "MesloLGS NF"
-font-size = 16
+font-family = "Monaspace Argon NF"
+font-size = 14
 background-opacity = 0.9
 background-blur = true
 window-padding-x = 10
