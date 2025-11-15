@@ -61,6 +61,8 @@ SKIPPED_ITEMS=()
 NPM_UPDATED_PACKAGES=()
 BREW_UPDATED_FORMULAE=()
 BREW_UPDATED_CASKS=()
+PACMAN_UPDATED_PACKAGES=()
+YAY_UPDATED_PACKAGES=()
 
 # Load NVM if available
 export NVM_DIR="$HOME/.nvm"
@@ -191,22 +193,36 @@ fi
 if command_exists apt-get; then
     print_section "Updating APT"
 
-    # Check if we have sudo privileges
-    if sudo -n true 2>/dev/null; then
+    # Determine if we need sudo prefix
+    # If already running as root (EUID=0), no sudo needed
+    # Otherwise, check if we have sudo privileges
+    if [[ $EUID -eq 0 ]]; then
+        # Running as root, no sudo needed
+        SUDO_CMD=""
+        HAS_PERMISSION=true
+    elif sudo -n true 2>/dev/null; then
+        # Not root, but sudo is available
+        SUDO_CMD="sudo"
+        HAS_PERMISSION=true
+    else
+        HAS_PERMISSION=false
+    fi
+
+    if [[ "$HAS_PERMISSION" = true ]]; then
         print_info "Updating package list..."
-        sudo apt-get update
+        $SUDO_CMD apt-get update
 
         print_info "Upgrading packages..."
-        sudo apt-get upgrade -y
+        $SUDO_CMD apt-get upgrade -y
 
         print_info "Performing distribution upgrade..."
-        sudo apt-get dist-upgrade -y
+        $SUDO_CMD apt-get dist-upgrade -y
 
         print_info "Removing unnecessary packages..."
-        sudo apt-get autoremove -y
+        $SUDO_CMD apt-get autoremove -y
 
         print_info "Cleaning package cache..."
-        sudo apt-get autoclean
+        $SUDO_CMD apt-get autoclean
 
         UPDATED_ITEMS+=("APT packages")
         print_success "APT updated successfully"
@@ -219,6 +235,101 @@ else
     print_section "APT"
     print_skip "apt-get not found, skipping (not a Debian/Ubuntu system)"
     SKIPPED_ITEMS+=("APT")
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Update Pacman (Arch Linux)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if command_exists pacman; then
+    print_section "Updating Pacman"
+
+    # Determine if we need sudo prefix
+    # If already running as root (EUID=0), no sudo needed
+    # Otherwise, check if we have sudo privileges
+    if [[ $EUID -eq 0 ]]; then
+        # Running as root, no sudo needed
+        SUDO_CMD=""
+        HAS_PERMISSION=true
+    elif sudo -n true 2>/dev/null; then
+        # Not root, but sudo is available
+        SUDO_CMD="sudo"
+        HAS_PERMISSION=true
+    else
+        HAS_PERMISSION=false
+    fi
+
+    if [[ "$HAS_PERMISSION" = true ]]; then
+        print_info "Syncing package databases and upgrading packages..."
+
+        # Capture list of packages that will be updated
+        outdated_packages=$(pacman -Qu 2>/dev/null | awk '{print $1}' || true)
+        if [[ -n "$outdated_packages" ]]; then
+            while IFS= read -r package; do
+                PACMAN_UPDATED_PACKAGES+=("$package")
+            done <<< "$outdated_packages"
+        fi
+
+        # Update and upgrade all packages
+        $SUDO_CMD pacman -Syu --noconfirm
+
+        print_info "Removing orphaned packages..."
+        # Remove orphaned packages (dependencies no longer needed)
+        orphans=$(pacman -Qdtq 2>/dev/null || true)
+        if [[ -n "$orphans" ]]; then
+            $SUDO_CMD pacman -Rns --noconfirm $orphans
+            print_success "Removed orphaned packages"
+        else
+            print_info "No orphaned packages found"
+        fi
+
+        print_info "Cleaning package cache..."
+        # Keep only the latest 3 versions of each package in cache
+        $SUDO_CMD paccache -rk3 2>/dev/null || print_warning "paccache not found, skipping cache cleanup (install pacman-contrib)"
+
+        UPDATED_ITEMS+=("Pacman packages")
+        print_success "Pacman updated successfully"
+    else
+        print_warning "sudo access required for pacman. Skipping Pacman updates."
+        print_info "Run with sudo or configure passwordless sudo for pacman"
+        SKIPPED_ITEMS+=("Pacman (no sudo access)")
+    fi
+else
+    print_section "Pacman"
+    print_skip "pacman not found, skipping (not an Arch Linux system)"
+    SKIPPED_ITEMS+=("Pacman")
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Update Yay (AUR Helper for Arch Linux)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if command_exists yay; then
+    print_section "Updating Yay (AUR)"
+
+    print_info "Syncing AUR databases and upgrading packages..."
+
+    # Capture list of packages that will be updated
+    outdated_packages=$(yay -Qu 2>/dev/null | awk '{print $1}' || true)
+    if [[ -n "$outdated_packages" ]]; then
+        while IFS= read -r package; do
+            YAY_UPDATED_PACKAGES+=("$package")
+        done <<< "$outdated_packages"
+    fi
+
+    # Update and upgrade all packages (including AUR)
+    yay -Syu --noconfirm
+
+    print_info "Cleaning package cache..."
+    # Clean uninstalled packages from cache
+    yay -Sc --noconfirm
+
+    UPDATED_ITEMS+=("Yay AUR packages")
+    print_success "Yay updated successfully"
+else
+    print_section "Yay (AUR)"
+    print_skip "yay not found, skipping (not installed or not an Arch Linux system)"
+    SKIPPED_ITEMS+=("Yay")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -291,6 +402,22 @@ if [[ ${#BREW_UPDATED_CASKS[@]} -gt 0 ]]; then
     echo "\n${BOLD}${GREEN}Homebrew casks updated (${#BREW_UPDATED_CASKS[@]}):${RESET}"
     for cask in "${BREW_UPDATED_CASKS[@]}"; do
         echo "  ${GREEN}✓${RESET} $cask"
+    done
+fi
+
+# Display detailed Pacman packages that were updated
+if [[ ${#PACMAN_UPDATED_PACKAGES[@]} -gt 0 ]]; then
+    echo "\n${BOLD}${GREEN}Pacman packages updated (${#PACMAN_UPDATED_PACKAGES[@]}):${RESET}"
+    for package in "${PACMAN_UPDATED_PACKAGES[@]}"; do
+        echo "  ${GREEN}✓${RESET} $package"
+    done
+fi
+
+# Display detailed Yay AUR packages that were updated
+if [[ ${#YAY_UPDATED_PACKAGES[@]} -gt 0 ]]; then
+    echo "\n${BOLD}${GREEN}Yay AUR packages updated (${#YAY_UPDATED_PACKAGES[@]}):${RESET}"
+    for package in "${YAY_UPDATED_PACKAGES[@]}"; do
+        echo "  ${GREEN}✓${RESET} $package"
     done
 fi
 
