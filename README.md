@@ -35,6 +35,8 @@ sudo pacman -S stow
 
 ## Install Starship
 
+Needed for zsh.
+
 Follow the [installation guide](https://starship.rs/guide/) to install Starship to make the terminal look awesome.
 
 ## Install Required Tools
@@ -56,6 +58,50 @@ Follow the instructions on the [GitHub page](https://github.com/eza-community/ez
 ### Micro
 
 Follow the instructions on the [GitHub page](https://github.com/zyedidia/micro#package-managers) to install Micro, a modern simple text editor.
+
+### Ripgrep
+
+Needed for Neovim.
+
+```zsh
+brew install ripgrep
+```
+
+```zsh
+sudo pacman -S ripgrep
+```
+
+### Fd
+
+Needed for Neovim.
+
+```zsh
+brew install fd
+```
+
+```zsh
+sudo pacman -S fd
+```
+
+### LazyGit
+
+Needed for Neovim.
+
+```zsh
+brew install lazygit
+```
+
+```zsh
+sudo pacman -S lazygit
+```
+
+### Treesitter CLI
+
+Needed for Neovim.
+
+```zsh
+npm install tree-sitter-cli
+```
 
 ## Install Tmux
 
