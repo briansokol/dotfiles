@@ -241,7 +241,12 @@ fi
 # Update Pacman (Arch Linux)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-if command_exists pacman; then
+# Skip pacman if yay is available (yay handles both official repos and AUR)
+if command_exists yay; then
+    print_section "Pacman"
+    print_skip "Skipping Pacman (yay will handle all package updates)"
+    SKIPPED_ITEMS+=("Pacman (using yay instead)")
+elif command_exists pacman; then
     print_section "Updating Pacman"
 
     # Determine if we need sudo prefix
