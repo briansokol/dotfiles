@@ -73,6 +73,42 @@ updateNpmOutdated () {
     print_info "Updating npm..."
     nvm install-latest-npm
 
+    # Check for and install packages from default-packages file
+    local default_packages_file="$HOME/.nvm/default-packages"
+    if [[ -f "$default_packages_file" ]]; then
+        print_info "Reading default packages from ~/.nvm/default-packages..."
+
+        # Read packages from file, skipping empty lines and comments
+        local packages_to_install=()
+        while IFS= read -r line || [[ -n "$line" ]]; do
+            # Skip empty lines and comments
+            if [[ -n "$line" ]] && [[ ! "$line" =~ ^[[:space:]]*# ]]; then
+                # Trim whitespace
+                local package=$(echo "$line" | xargs)
+                if [[ -n "$package" ]]; then
+                    packages_to_install+=("$package")
+                fi
+            fi
+        done < "$default_packages_file"
+
+        # Install packages if any were found
+        if [[ ${#packages_to_install[@]} -gt 0 ]]; then
+            print_info "Installing ${#packages_to_install[@]} default packages..."
+            npm install -g --quiet "${packages_to_install[@]}"
+
+            # Track installed packages
+            for pkg in "${packages_to_install[@]}"; do
+                # Extract package name (without version specifier if present)
+                package_name="${pkg%@*}"
+                NPM_UPDATED_PACKAGES+=("$package_name (default)")
+            done
+
+            print_success "Default packages installed"
+        else
+            print_info "No packages found in ~/.nvm/default-packages"
+        fi
+    fi
+
     print_info "Scanning for outdated global packages..."
 
     # Check if ncu (npm-check-updates) is available
