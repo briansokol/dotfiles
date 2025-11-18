@@ -424,40 +424,50 @@ fi
 
 # Display detailed npm packages that were updated
 if [[ ${#NPM_UPDATED_PACKAGES[@]} -gt 0 ]]; then
-    echo "\n${BOLD}${GREEN}npm packages updated (${#NPM_UPDATED_PACKAGES[@]}):${RESET}"
-    for package in "${NPM_UPDATED_PACKAGES[@]}"; do
+    # De-duplicate the array
+    local -a deduped_npm=($(printf '%s\n' "${NPM_UPDATED_PACKAGES[@]}" | sort -u))
+    echo "\n${BOLD}${GREEN}npm packages updated (${#deduped_npm[@]}):${RESET}"
+    for package in "${deduped_npm[@]}"; do
         echo "  ${GREEN}✓${RESET} $package"
     done
 fi
 
 # Display detailed Homebrew formulae that were updated
 if [[ ${#BREW_UPDATED_FORMULAE[@]} -gt 0 ]]; then
-    echo "\n${BOLD}${GREEN}Homebrew formulae updated (${#BREW_UPDATED_FORMULAE[@]}):${RESET}"
-    for formula in "${BREW_UPDATED_FORMULAE[@]}"; do
+    # De-duplicate the array
+    local -a deduped_brew_formulae=($(printf '%s\n' "${BREW_UPDATED_FORMULAE[@]}" | sort -u))
+    echo "\n${BOLD}${GREEN}Homebrew formulae updated (${#deduped_brew_formulae[@]}):${RESET}"
+    for formula in "${deduped_brew_formulae[@]}"; do
         echo "  ${GREEN}✓${RESET} $formula"
     done
 fi
 
 # Display detailed Homebrew casks that were updated
 if [[ ${#BREW_UPDATED_CASKS[@]} -gt 0 ]]; then
-    echo "\n${BOLD}${GREEN}Homebrew casks updated (${#BREW_UPDATED_CASKS[@]}):${RESET}"
-    for cask in "${BREW_UPDATED_CASKS[@]}"; do
+    # De-duplicate the array
+    local -a deduped_brew_casks=($(printf '%s\n' "${BREW_UPDATED_CASKS[@]}" | sort -u))
+    echo "\n${BOLD}${GREEN}Homebrew casks updated (${#deduped_brew_casks[@]}):${RESET}"
+    for cask in "${deduped_brew_casks[@]}"; do
         echo "  ${GREEN}✓${RESET} $cask"
     done
 fi
 
 # Display detailed Pacman packages that were updated
 if [[ ${#PACMAN_UPDATED_PACKAGES[@]} -gt 0 ]]; then
-    echo "\n${BOLD}${GREEN}Pacman packages updated (${#PACMAN_UPDATED_PACKAGES[@]}):${RESET}"
-    for package in "${PACMAN_UPDATED_PACKAGES[@]}"; do
+    # De-duplicate the array
+    local -a deduped_pacman=($(printf '%s\n' "${PACMAN_UPDATED_PACKAGES[@]}" | sort -u))
+    echo "\n${BOLD}${GREEN}Pacman packages updated (${#deduped_pacman[@]}):${RESET}"
+    for package in "${deduped_pacman[@]}"; do
         echo "  ${GREEN}✓${RESET} $package"
     done
 fi
 
 # Display detailed Yay AUR packages that were updated
 if [[ ${#YAY_UPDATED_PACKAGES[@]} -gt 0 ]]; then
-    echo "\n${BOLD}${GREEN}Yay AUR packages updated (${#YAY_UPDATED_PACKAGES[@]}):${RESET}"
-    for package in "${YAY_UPDATED_PACKAGES[@]}"; do
+    # De-duplicate the array
+    local -a deduped_yay=($(printf '%s\n' "${YAY_UPDATED_PACKAGES[@]}" | sort -u))
+    echo "\n${BOLD}${GREEN}Yay AUR packages updated (${#deduped_yay[@]}):${RESET}"
+    for package in "${deduped_yay[@]}"; do
         echo "  ${GREEN}✓${RESET} $package"
     done
 fi
