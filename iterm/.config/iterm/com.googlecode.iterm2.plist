@@ -15,24 +15,28 @@
 	<key>AITermAPI</key>
 	<integer>2</integer>
 	<key>AIVectorStore</key>
-	<integer>1</integer>
+	<integer>0</integer>
 	<key>AIVendor</key>
 	<integer>2</integer>
 	<key>AdjustWindowForFontSizeChange</key>
 	<true/>
 	<key>AiMaxTokens</key>
-	<integer>1000000</integer>
+	<integer>400000</integer>
 	<key>AiModel</key>
-	<string>gpt-4.1</string>
+	<string>gpt-5.1</string>
 	<key>AiResponseMaxTokens</key>
-	<integer>32768</integer>
+	<integer>128000</integer>
 	<key>AitermURL</key>
 	<string>https://api.openai.com/v1/responses</string>
 	<key>AllowClipboardAccess</key>
 	<true/>
+	<key>AlphaForDeselectedCommandShade</key>
+	<real>0.05000000074505806</real>
 	<key>AlternateMouseScroll</key>
 	<true/>
 	<key>AnimateDimming</key>
+	<true/>
+	<key>AnimateGraphStatusBarComponents</key>
 	<true/>
 	<key>AutoHideTmuxClientSession</key>
 	<false/>
@@ -395,6 +399,8 @@
 	<true/>
 	<key>DisableFullscreenTransparency</key>
 	<false/>
+	<key>DisableTopRightIndicators</key>
+	<false/>
 	<key>EnableAPIServer</key>
 	<true/>
 	<key>EnableDivisionView</key>
@@ -424,6 +430,8 @@
 		</dict>
 	</dict>
 	<key>HapticFeedbackForEsc</key>
+	<false/>
+	<key>HdrCursor</key>
 	<false/>
 	<key>HiddenAFRStrokeThickness</key>
 	<real>0.0</real>
@@ -1396,6 +1404,8 @@
 	<false/>
 	<key>ShowFullScreenTabBar</key>
 	<true/>
+	<key>ShowMetalFPSmeter</key>
+	<false/>
 	<key>ShowPaneTitles</key>
 	<true/>
 	<key>SmartPlacement</key>
@@ -1436,6 +1446,8 @@
 	<false/>
 	<key>URLHandlersByGuid</key>
 	<dict/>
+	<key>UnderlineCursorHeight</key>
+	<real>2</real>
 	<key>UseBorder</key>
 	<false/>
 	<key>UseCompactLabel</key>
