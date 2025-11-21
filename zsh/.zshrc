@@ -160,3 +160,6 @@ export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/b
 
 [[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
 
+
+# Added by Antigravity
+export PATH="/Users/bsokol/.antigravity/antigravity/bin:$PATH"
