@@ -58,95 +58,15 @@ print_skip() {
 # Track what was updated
 UPDATED_ITEMS=()
 SKIPPED_ITEMS=()
-NPM_UPDATED_PACKAGES=()
 BREW_UPDATED_FORMULAE=()
 BREW_UPDATED_CASKS=()
 PACMAN_UPDATED_PACKAGES=()
 YAY_UPDATED_PACKAGES=()
+NPM_UPDATED_PACKAGES=()
 
 # Load NVM if available
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-# Function to update npm packages for a given node version
-updateNpmOutdated () {
-    print_info "Updating npm..."
-    nvm install-latest-npm
-
-    # Check for and install packages from default-packages file
-    local default_packages_file="$HOME/.nvm/default-packages"
-    if [[ -f "$default_packages_file" ]]; then
-        print_info "Reading default packages from ~/.nvm/default-packages..."
-
-        # Read packages from file, skipping empty lines and comments
-        local packages_to_install=()
-        while IFS= read -r line || [[ -n "$line" ]]; do
-            # Skip empty lines and comments
-            if [[ -n "$line" ]] && [[ ! "$line" =~ ^[[:space:]]*# ]]; then
-                # Trim whitespace
-                local package=$(echo "$line" | xargs)
-                if [[ -n "$package" ]]; then
-                    packages_to_install+=("$package")
-                fi
-            fi
-        done < "$default_packages_file"
-
-        # Install packages if any were found
-        if [[ ${#packages_to_install[@]} -gt 0 ]]; then
-            print_info "Installing ${#packages_to_install[@]} default packages..."
-            npm install -g --quiet "${packages_to_install[@]}"
-
-            # Track installed packages
-            for pkg in "${packages_to_install[@]}"; do
-                # Extract package name (without version specifier if present)
-                package_name="${pkg%@*}"
-                NPM_UPDATED_PACKAGES+=("$package_name (default)")
-            done
-
-            print_success "Default packages installed"
-        else
-            print_info "No packages found in ~/.nvm/default-packages"
-        fi
-    fi
-
-    print_info "Scanning for outdated global packages..."
-
-    # Check if ncu (npm-check-updates) is available
-    if ! command_exists ncu; then
-        print_warning "npm-check-updates (ncu) not found. Skipping global package updates."
-        print_info "Install with: npm install -g npm-check-updates"
-        return 0
-    fi
-
-    # Check if jq is available
-    if ! command_exists jq; then
-        print_warning "jq not found. Skipping global package updates."
-        print_info "Install with: brew install jq (macOS) or apt-get install jq (Linux)"
-        return 0
-    fi
-
-    local packages=$(ncu -g --jsonUpgraded | jq -r 'to_entries[] | "\(.key)@\(.value)"')
-
-    if [[ -z "$packages" ]]; then
-        print_success "All global packages are up to date"
-        return 0
-    fi
-
-    echo "$packages" | while IFS= read -r package; do
-        # Skip npm itself (updated separately)
-        if [[ "$package" = "npm@"* ]]; then
-            continue
-        fi
-        print_info "Upgrading → $package"
-        npm -g install --quiet "$package"
-
-        # Extract package name (without version)
-        package_name="${package%@*}"
-        NPM_UPDATED_PACKAGES+=("$package_name")
-    done
-
-    print_success "Global packages updated"
-}
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Update Zinit
@@ -374,39 +294,167 @@ else
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Update npm packages for all node versions
+# Update NPM Global Packages
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-if command_exists nvm; then
-    print_section "Updating npm Dependencies"
-
-    # Temporarily disable error trapping for nvm operations
-    trap - ERR
-
-    # Get list of installed node versions, filtering only version lines
-    # Extract only the installed versions (before the aliases section)
-    nvm list | while IFS= read -r line; do
-        # Remove spaces, arrows, and ANSI color codes
-        version="$(echo "${line}" | tr -d '[:space:]' | sed 's/->//g' | sed -E "s/"$'\E'"\[([0-9]{1,2}(;[0-9]{1,2})*)?m//g")"
-
-        # Only process if it's a valid version number (vX.Y.Z format)
-        if [[ "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            print_info "Using Node $version"
-            nvm use "$version"
-            updateNpmOutdated
-            UPDATED_ITEMS+=("npm packages for $version")
-        fi
-    done
-
-    print_success "All npm dependencies updated"
-
-    # Re-enable error trapping
-    trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+# Check if jq is available (required for JSON parsing)
+if ! command_exists jq; then
+    print_section "NPM Global Packages"
+    print_skip "jq not found, skipping npm updates (jq is required for JSON parsing)"
+    SKIPPED_ITEMS+=("NPM (jq not installed)")
+elif ! command_exists npm; then
+    print_section "NPM Global Packages"
+    print_skip "npm not found, skipping (Node.js not installed)"
+    SKIPPED_ITEMS+=("NPM")
 else
-    print_section "npm Dependencies"
-    print_skip "nvm not found, skipping npm updates"
-    SKIPPED_ITEMS+=("npm/nvm")
+    print_section "Updating NPM Global Packages"
+
+    # Check if ncu (npm-check-updates) is available
+    if ! command_exists ncu; then
+        print_info "npm-check-updates not found, attempting to install..."
+        if npm install -g npm-check-updates 2>/dev/null; then
+            print_success "npm-check-updates installed successfully"
+        else
+            print_warning "Failed to install npm-check-updates, skipping npm updates"
+            SKIPPED_ITEMS+=("NPM (could not install npm-check-updates)")
+            # Jump to next section
+            print_section "NPM Global Packages"
+            print_skip "Skipped due to npm-check-updates installation failure"
+        fi
+    fi
+
+    # Only proceed if ncu is now available
+    if command_exists ncu; then
+        # Determine if nvm is installed (nvm is a function, not a command, so check if it exists as a function)
+        if type nvm >/dev/null 2>&1 || [[ -s "$NVM_DIR/nvm.sh" ]]; then
+            # Ensure nvm is loaded as a function
+            if ! type nvm >/dev/null 2>&1 && [[ -s "$NVM_DIR/nvm.sh" ]]; then
+                source "$NVM_DIR/nvm.sh"
+            fi
+
+            print_info "NVM detected, updating packages for all Node versions..."
+
+            # Get current active version to restore later
+            ORIGINAL_NODE_VERSION=$(nvm current 2>/dev/null || echo "")
+
+            # Get list of installed Node versions
+            # Parse nvm list output to get only the version numbers (including 'system')
+            # Use --no-alias to exclude alias lines and only show installed versions
+            # Extract version numbers using capture groups for reliable parsing
+            NODE_VERSIONS=$(nvm list --no-alias 2>/dev/null | sed 's/.*v\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/; s/.*\(system\).*/\1/' | grep -E '^[0-9]|^system')
+
+            if [[ -z "$NODE_VERSIONS" ]]; then
+                print_warning "No Node versions found in nvm"
+                SKIPPED_ITEMS+=("NPM (no Node versions in nvm)")
+            else
+                # Get default packages list if it exists
+                DEFAULT_PACKAGES_FILE="$HOME/.nvm/default-packages"
+                if [[ -f "$DEFAULT_PACKAGES_FILE" ]]; then
+                    DEFAULT_PACKAGES=$(grep -v '^#' "$DEFAULT_PACKAGES_FILE" | grep -v '^$' || true)
+                else
+                    DEFAULT_PACKAGES=""
+                fi
+
+                # Process each Node version
+                while IFS= read -r version; do
+                    [[ -z "$version" ]] && continue
+
+                    print_info "Switching to Node $version..."
+                    if ! nvm use "$version" >/dev/null 2>&1; then
+                        print_warning "Failed to switch to Node $version, skipping"
+                        continue
+                    fi
+
+                    print_info "Checking for updates in Node $version..."
+
+                    # Build list of packages to update
+                    PACKAGES_TO_UPDATE=()
+
+                    # Get currently installed global packages
+                    INSTALLED_PACKAGES=$(npm list -g --json 2>/dev/null | jq -r '.dependencies | keys[]' 2>/dev/null || echo "")
+
+                    # Check for missing default packages
+                    if [[ -n "$DEFAULT_PACKAGES" ]]; then
+                        while IFS= read -r pkg; do
+                            [[ -z "$pkg" ]] && continue
+                            if ! echo "$INSTALLED_PACKAGES" | grep -q "^${pkg}$"; then
+                                print_info "Default package '$pkg' not installed, adding to update list"
+                                PACKAGES_TO_UPDATE+=("$pkg")
+                            fi
+                        done <<< "$DEFAULT_PACKAGES"
+                    fi
+
+                    # Check for packages with available updates
+                    OUTDATED_PACKAGES=$(ncu -g --jsonUpgraded 2>/dev/null | jq -r 'keys[]' 2>/dev/null || echo "")
+                    if [[ -n "$OUTDATED_PACKAGES" ]]; then
+                        while IFS= read -r pkg; do
+                            [[ -z "$pkg" ]] && continue
+                            PACKAGES_TO_UPDATE+=("$pkg")
+                        done <<< "$OUTDATED_PACKAGES"
+                    fi
+
+                    # Install updates if any packages need updating
+                    if [[ ${#PACKAGES_TO_UPDATE[@]} -gt 0 ]]; then
+                        print_info "Updating ${#PACKAGES_TO_UPDATE[@]} package(s) in Node $version: ${PACKAGES_TO_UPDATE[*]}"
+                        if npm install -g "${PACKAGES_TO_UPDATE[@]}" 2>/dev/null; then
+                            # Add packages to the tracking array
+                            for pkg in "${PACKAGES_TO_UPDATE[@]}"; do
+                                NPM_UPDATED_PACKAGES+=("$pkg")
+                            done
+                            print_success "Updated packages in Node $version"
+                        else
+                            print_warning "Failed to update packages in Node $version, continuing to next version"
+                        fi
+                    else
+                        print_info "No updates needed for Node $version"
+                    fi
+                done <<< "$NODE_VERSIONS"
+
+                # Restore original Node version
+                if [[ -n "$ORIGINAL_NODE_VERSION" ]] && [[ "$ORIGINAL_NODE_VERSION" != "none" ]]; then
+                    print_info "Restoring original Node version: $ORIGINAL_NODE_VERSION"
+                    nvm use "$ORIGINAL_NODE_VERSION" >/dev/null 2>&1 || print_warning "Failed to restore Node $ORIGINAL_NODE_VERSION"
+                fi
+
+                UPDATED_ITEMS+=("NPM global packages")
+                print_success "NPM global packages updated successfully"
+            fi
+        else
+            # No nvm, just update the current Node installation
+            print_info "NVM not detected, updating global packages for current Node installation..."
+
+            # Build list of packages to update
+            PACKAGES_TO_UPDATE=()
+
+            # Check for packages with available updates
+            OUTDATED_PACKAGES=$(ncu -g --jsonUpgraded 2>/dev/null | jq -r 'keys[]' 2>/dev/null || echo "")
+            if [[ -n "$OUTDATED_PACKAGES" ]]; then
+                while IFS= read -r pkg; do
+                    [[ -z "$pkg" ]] && continue
+                    PACKAGES_TO_UPDATE+=("$pkg")
+                done <<< "$OUTDATED_PACKAGES"
+            fi
+
+            # Install updates if any packages need updating
+            if [[ ${#PACKAGES_TO_UPDATE[@]} -gt 0 ]]; then
+                print_info "Updating ${#PACKAGES_TO_UPDATE[@]} package(s): ${PACKAGES_TO_UPDATE[*]}"
+                if npm install -g "${PACKAGES_TO_UPDATE[@]}" 2>/dev/null; then
+                    # Add packages to the tracking array
+                    for pkg in "${PACKAGES_TO_UPDATE[@]}"; do
+                        NPM_UPDATED_PACKAGES+=("$pkg")
+                    done
+                    UPDATED_ITEMS+=("NPM global packages")
+                    print_success "NPM global packages updated successfully"
+                else
+                    print_warning "Failed to update npm packages"
+                    SKIPPED_ITEMS+=("NPM (update failed)")
+                fi
+            else
+                print_info "No npm updates available"
+                print_success "All npm global packages are up-to-date"
+            fi
+        fi
+    fi
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -419,16 +467,6 @@ if [[ ${#UPDATED_ITEMS[@]} -gt 0 ]]; then
     echo "${BOLD}${GREEN}Updated:${RESET}"
     for item in "${UPDATED_ITEMS[@]}"; do
         echo "  ${GREEN}✓${RESET} $item"
-    done
-fi
-
-# Display detailed npm packages that were updated
-if [[ ${#NPM_UPDATED_PACKAGES[@]} -gt 0 ]]; then
-    # De-duplicate the array
-    local -a deduped_npm=($(printf '%s\n' "${NPM_UPDATED_PACKAGES[@]}" | sort -u))
-    echo "\n${BOLD}${GREEN}npm packages updated (${#deduped_npm[@]}):${RESET}"
-    for package in "${deduped_npm[@]}"; do
-        echo "  ${GREEN}✓${RESET} $package"
     done
 fi
 
@@ -468,6 +506,16 @@ if [[ ${#YAY_UPDATED_PACKAGES[@]} -gt 0 ]]; then
     local -a deduped_yay=($(printf '%s\n' "${YAY_UPDATED_PACKAGES[@]}" | sort -u))
     echo "\n${BOLD}${GREEN}Yay AUR packages updated (${#deduped_yay[@]}):${RESET}"
     for package in "${deduped_yay[@]}"; do
+        echo "  ${GREEN}✓${RESET} $package"
+    done
+fi
+
+# Display detailed npm packages that were updated
+if [[ ${#NPM_UPDATED_PACKAGES[@]} -gt 0 ]]; then
+    # De-duplicate the array
+    local -a deduped_npm=($(printf '%s\n' "${NPM_UPDATED_PACKAGES[@]}" | sort -u))
+    echo "\n${BOLD}${GREEN}NPM packages updated (${#deduped_npm[@]}):${RESET}"
+    for package in "${deduped_npm[@]}"; do
         echo "  ${GREEN}✓${RESET} $package"
     done
 fi
