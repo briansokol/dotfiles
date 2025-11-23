@@ -107,7 +107,7 @@ fi
 #export PATH=$JAVA_HOME/bin:$PATH
 
 # General Aliases
-alias update-all='source ~/.scripts/update-all-dependencies.sh'
+alias update-all='~/.scripts/update-all-dependencies.sh'
 alias bb='bbedit'
 alias npmlg='npm list -g --depth=0'
 
