@@ -68,36 +68,85 @@ NPM_UPDATED_PACKAGES=()
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
+# Load Zinit if available (disable error trapping temporarily)
+trap - ERR
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+if [ -s "${ZINIT_HOME}/zinit.zsh" ]; then
+    source "${ZINIT_HOME}/zinit.zsh" 2>/dev/null || true
+fi
+# Re-enable error trapping
+trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Parse command-line flags for selective package manager updates
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Default: run all package managers
+RUN_APT=true
+RUN_PACMAN=true
+RUN_YAY=true
+RUN_NPM=true
+RUN_HOMEBREW=true
+RUN_ZINIT=true
+
+# If any flags are provided, set all to false and enable only requested ones
+if [[ $# -gt 0 ]]; then
+    RUN_APT=false
+    RUN_PACMAN=false
+    RUN_YAY=false
+    RUN_NPM=false
+    RUN_HOMEBREW=false
+    RUN_ZINIT=false
+
+    while getopts "apynhz" opt; do
+        case $opt in
+            a) RUN_APT=true ;;
+            p) RUN_PACMAN=true ;;
+            y) RUN_YAY=true ;;
+            n) RUN_NPM=true ;;
+            h) RUN_HOMEBREW=true ;;
+            z) RUN_ZINIT=true ;;
+            \?) ;; # Ignore invalid options
+        esac
+    done
+fi
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Update Zinit
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-if command_exists zinit; then
-    print_section "Updating Zinit"
+if [[ "$RUN_ZINIT" = true ]]; then
+    if command_exists zinit; then
+        print_section "Updating Zinit"
 
-    # Temporarily disable error trapping for zinit operations
-    # zinit manages its own errors and background compilation processes
-    trap - ERR
+        # Temporarily disable error trapping for zinit operations
+        # zinit manages its own errors and background compilation processes
+        trap - ERR
 
-    print_info "Updating Zinit core..."
-    zinit self-update
-    UPDATED_ITEMS+=("Zinit core")
+        print_info "Updating Zinit core..."
+        zinit self-update
+        UPDATED_ITEMS+=("Zinit core")
 
-    print_info "Updating Zinit plugins..."
-    zinit update
+        print_info "Updating Zinit plugins..."
+        zinit update
 
-    UPDATED_ITEMS+=("Zinit plugins")
-    print_success "Zinit updated successfully"
+        UPDATED_ITEMS+=("Zinit plugins")
+        print_success "Zinit updated successfully"
 
-    # Wait for zinit background processes to complete and suppress their output
-    sleep 1
-    wait 2>/dev/null || true
+        # Wait for zinit background processes to complete and suppress their output
+        sleep 1
+        wait 2>/dev/null || true
 
-    # Re-enable error trapping
-    trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+        # Re-enable error trapping
+        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+    else
+        print_section "Zinit"
+        print_skip "Zinit not found, skipping Zinit updates"
+        SKIPPED_ITEMS+=("Zinit")
+    fi
 else
     print_section "Zinit"
-    print_skip "Zinit not found, skipping Zinit updates"
+    print_skip "Zinit skipped (not requested by user)"
     SKIPPED_ITEMS+=("Zinit")
 fi
 
@@ -105,40 +154,46 @@ fi
 # Update Homebrew
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-if command_exists brew; then
-    print_section "Updating Homebrew"
+if [[ "$RUN_HOMEBREW" = true ]]; then
+    if command_exists brew; then
+        print_section "Updating Homebrew"
 
-    print_info "Updating Homebrew formula list..."
-    brew update
+        print_info "Updating Homebrew formula list..."
+        brew update
 
-    print_info "Upgrading formulae..."
-    # Capture the list of outdated formulae before upgrading
-    outdated_formulae=$(brew outdated --formula --quiet 2>/dev/null || true)
-    if [[ -n "$outdated_formulae" ]]; then
-        while IFS= read -r formula; do
-            BREW_UPDATED_FORMULAE+=("$formula")
-        done <<< "$outdated_formulae"
+        print_info "Upgrading formulae..."
+        # Capture the list of outdated formulae before upgrading
+        outdated_formulae=$(brew outdated --formula --quiet 2>/dev/null || true)
+        if [[ -n "$outdated_formulae" ]]; then
+            while IFS= read -r formula; do
+                BREW_UPDATED_FORMULAE+=("$formula")
+            done <<< "$outdated_formulae"
+        fi
+        brew upgrade
+
+        print_info "Upgrading casks..."
+        # Capture the list of outdated casks before upgrading
+        outdated_casks=$(brew outdated --cask --quiet 2>/dev/null || true)
+        if [[ -n "$outdated_casks" ]]; then
+            while IFS= read -r cask; do
+                BREW_UPDATED_CASKS+=("$cask")
+            done <<< "$outdated_casks"
+        fi
+        brew upgrade --cask
+
+        print_info "Cleaning up old versions..."
+        brew cleanup
+
+        UPDATED_ITEMS+=("Homebrew packages")
+        print_success "Homebrew updated successfully"
+    else
+        print_section "Homebrew"
+        print_skip "Homebrew not found, skipping (not available on this system)"
+        SKIPPED_ITEMS+=("Homebrew")
     fi
-    brew upgrade
-
-    print_info "Upgrading casks..."
-    # Capture the list of outdated casks before upgrading
-    outdated_casks=$(brew outdated --cask --quiet 2>/dev/null || true)
-    if [[ -n "$outdated_casks" ]]; then
-        while IFS= read -r cask; do
-            BREW_UPDATED_CASKS+=("$cask")
-        done <<< "$outdated_casks"
-    fi
-    brew upgrade --cask
-
-    print_info "Cleaning up old versions..."
-    brew cleanup
-
-    UPDATED_ITEMS+=("Homebrew packages")
-    print_success "Homebrew updated successfully"
 else
     print_section "Homebrew"
-    print_skip "Homebrew not found, skipping (not available on this system)"
+    print_skip "Homebrew skipped (not requested by user)"
     SKIPPED_ITEMS+=("Homebrew")
 fi
 
@@ -146,50 +201,56 @@ fi
 # Update APT (Debian/Ubuntu)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-if command_exists apt-get; then
-    print_section "Updating APT"
+if [[ "$RUN_APT" = true ]]; then
+    if command_exists apt-get; then
+        print_section "Updating APT"
 
-    # Determine if we need sudo prefix
-    # If already running as root (EUID=0), no sudo needed
-    # Otherwise, check if we have sudo privileges
-    if [[ $EUID -eq 0 ]]; then
-        # Running as root, no sudo needed
-        SUDO_CMD=""
-        HAS_PERMISSION=true
-    elif sudo -n true 2>/dev/null; then
-        # Not root, but sudo is available
-        SUDO_CMD="sudo"
-        HAS_PERMISSION=true
+        # Determine if we need sudo prefix
+        # If already running as root (EUID=0), no sudo needed
+        # Otherwise, check if we have sudo privileges
+        if [[ $EUID -eq 0 ]]; then
+            # Running as root, no sudo needed
+            SUDO_CMD=""
+            HAS_PERMISSION=true
+        elif sudo -n true 2>/dev/null; then
+            # Not root, but sudo is available
+            SUDO_CMD="sudo"
+            HAS_PERMISSION=true
+        else
+            HAS_PERMISSION=false
+        fi
+
+        if [[ "$HAS_PERMISSION" = true ]]; then
+            print_info "Updating package list..."
+            $SUDO_CMD apt-get update
+
+            print_info "Upgrading packages..."
+            $SUDO_CMD apt-get upgrade -y
+
+            print_info "Performing distribution upgrade..."
+            $SUDO_CMD apt-get dist-upgrade -y
+
+            print_info "Removing unnecessary packages..."
+            $SUDO_CMD apt-get autoremove -y
+
+            print_info "Cleaning package cache..."
+            $SUDO_CMD apt-get autoclean
+
+            UPDATED_ITEMS+=("APT packages")
+            print_success "APT updated successfully"
+        else
+            print_warning "sudo access required for apt-get. Skipping APT updates."
+            print_info "Run with sudo or configure passwordless sudo for apt-get"
+            SKIPPED_ITEMS+=("APT (no sudo access)")
+        fi
     else
-        HAS_PERMISSION=false
-    fi
-
-    if [[ "$HAS_PERMISSION" = true ]]; then
-        print_info "Updating package list..."
-        $SUDO_CMD apt-get update
-
-        print_info "Upgrading packages..."
-        $SUDO_CMD apt-get upgrade -y
-
-        print_info "Performing distribution upgrade..."
-        $SUDO_CMD apt-get dist-upgrade -y
-
-        print_info "Removing unnecessary packages..."
-        $SUDO_CMD apt-get autoremove -y
-
-        print_info "Cleaning package cache..."
-        $SUDO_CMD apt-get autoclean
-
-        UPDATED_ITEMS+=("APT packages")
-        print_success "APT updated successfully"
-    else
-        print_warning "sudo access required for apt-get. Skipping APT updates."
-        print_info "Run with sudo or configure passwordless sudo for apt-get"
-        SKIPPED_ITEMS+=("APT (no sudo access)")
+        print_section "APT"
+        print_skip "apt-get not found, skipping (not a Debian/Ubuntu system)"
+        SKIPPED_ITEMS+=("APT")
     fi
 else
     print_section "APT"
-    print_skip "apt-get not found, skipping (not a Debian/Ubuntu system)"
+    print_skip "APT skipped (not requested by user)"
     SKIPPED_ITEMS+=("APT")
 fi
 
@@ -197,67 +258,73 @@ fi
 # Update Pacman (Arch Linux)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Skip pacman if yay is available (yay handles both official repos and AUR)
-if command_exists yay; then
-    print_section "Pacman"
-    print_skip "Skipping Pacman (yay will handle all package updates)"
-    SKIPPED_ITEMS+=("Pacman (using yay instead)")
-elif command_exists pacman; then
-    print_section "Updating Pacman"
+if [[ "$RUN_PACMAN" = true ]]; then
+    # Skip pacman if yay is available (yay handles both official repos and AUR)
+    if command_exists yay; then
+        print_section "Pacman"
+        print_skip "Skipping Pacman (yay will handle all package updates)"
+        SKIPPED_ITEMS+=("Pacman (using yay instead)")
+    elif command_exists pacman; then
+        print_section "Updating Pacman"
 
-    # Determine if we need sudo prefix
-    # If already running as root (EUID=0), no sudo needed
-    # Otherwise, check if we have sudo privileges
-    if [[ $EUID -eq 0 ]]; then
-        # Running as root, no sudo needed
-        SUDO_CMD=""
-        HAS_PERMISSION=true
-    elif sudo -n true 2>/dev/null; then
-        # Not root, but sudo is available
-        SUDO_CMD="sudo"
-        HAS_PERMISSION=true
-    else
-        HAS_PERMISSION=false
-    fi
-
-    if [[ "$HAS_PERMISSION" = true ]]; then
-        print_info "Syncing package databases and upgrading packages..."
-
-        # Capture list of packages that will be updated
-        outdated_packages=$(pacman -Qu 2>/dev/null | awk '{print $1}' || true)
-        if [[ -n "$outdated_packages" ]]; then
-            while IFS= read -r package; do
-                PACMAN_UPDATED_PACKAGES+=("$package")
-            done <<< "$outdated_packages"
-        fi
-
-        # Update and upgrade all packages
-        $SUDO_CMD pacman -Syu --noconfirm
-
-        print_info "Removing orphaned packages..."
-        # Remove orphaned packages (dependencies no longer needed)
-        orphans=$(pacman -Qdtq 2>/dev/null || true)
-        if [[ -n "$orphans" ]]; then
-            $SUDO_CMD pacman -Rns --noconfirm $orphans
-            print_success "Removed orphaned packages"
+        # Determine if we need sudo prefix
+        # If already running as root (EUID=0), no sudo needed
+        # Otherwise, check if we have sudo privileges
+        if [[ $EUID -eq 0 ]]; then
+            # Running as root, no sudo needed
+            SUDO_CMD=""
+            HAS_PERMISSION=true
+        elif sudo -n true 2>/dev/null; then
+            # Not root, but sudo is available
+            SUDO_CMD="sudo"
+            HAS_PERMISSION=true
         else
-            print_info "No orphaned packages found"
+            HAS_PERMISSION=false
         fi
 
-        print_info "Cleaning package cache..."
-        # Keep only the latest 3 versions of each package in cache
-        $SUDO_CMD paccache -rk3 2>/dev/null || print_warning "paccache not found, skipping cache cleanup (install pacman-contrib)"
+        if [[ "$HAS_PERMISSION" = true ]]; then
+            print_info "Syncing package databases and upgrading packages..."
 
-        UPDATED_ITEMS+=("Pacman packages")
-        print_success "Pacman updated successfully"
+            # Capture list of packages that will be updated
+            outdated_packages=$(pacman -Qu 2>/dev/null | awk '{print $1}' || true)
+            if [[ -n "$outdated_packages" ]]; then
+                while IFS= read -r package; do
+                    PACMAN_UPDATED_PACKAGES+=("$package")
+                done <<< "$outdated_packages"
+            fi
+
+            # Update and upgrade all packages
+            $SUDO_CMD pacman -Syu --noconfirm
+
+            print_info "Removing orphaned packages..."
+            # Remove orphaned packages (dependencies no longer needed)
+            orphans=$(pacman -Qdtq 2>/dev/null || true)
+            if [[ -n "$orphans" ]]; then
+                $SUDO_CMD pacman -Rns --noconfirm $orphans
+                print_success "Removed orphaned packages"
+            else
+                print_info "No orphaned packages found"
+            fi
+
+            print_info "Cleaning package cache..."
+            # Keep only the latest 3 versions of each package in cache
+            $SUDO_CMD paccache -rk3 2>/dev/null || print_warning "paccache not found, skipping cache cleanup (install pacman-contrib)"
+
+            UPDATED_ITEMS+=("Pacman packages")
+            print_success "Pacman updated successfully"
+        else
+            print_warning "sudo access required for pacman. Skipping Pacman updates."
+            print_info "Run with sudo or configure passwordless sudo for pacman"
+            SKIPPED_ITEMS+=("Pacman (no sudo access)")
+        fi
     else
-        print_warning "sudo access required for pacman. Skipping Pacman updates."
-        print_info "Run with sudo or configure passwordless sudo for pacman"
-        SKIPPED_ITEMS+=("Pacman (no sudo access)")
+        print_section "Pacman"
+        print_skip "pacman not found, skipping (not an Arch Linux system)"
+        SKIPPED_ITEMS+=("Pacman")
     fi
 else
     print_section "Pacman"
-    print_skip "pacman not found, skipping (not an Arch Linux system)"
+    print_skip "Pacman skipped (not requested by user)"
     SKIPPED_ITEMS+=("Pacman")
 fi
 
@@ -265,31 +332,37 @@ fi
 # Update Yay (AUR Helper for Arch Linux)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-if command_exists yay; then
-    print_section "Updating Yay (AUR)"
+if [[ "$RUN_YAY" = true ]]; then
+    if command_exists yay; then
+        print_section "Updating Yay (AUR)"
 
-    print_info "Syncing AUR databases and upgrading packages..."
+        print_info "Syncing AUR databases and upgrading packages..."
 
-    # Capture list of packages that will be updated
-    outdated_packages=$(yay -Qu 2>/dev/null | awk '{print $1}' || true)
-    if [[ -n "$outdated_packages" ]]; then
-        while IFS= read -r package; do
-            YAY_UPDATED_PACKAGES+=("$package")
-        done <<< "$outdated_packages"
+        # Capture list of packages that will be updated
+        outdated_packages=$(yay -Qu 2>/dev/null | awk '{print $1}' || true)
+        if [[ -n "$outdated_packages" ]]; then
+            while IFS= read -r package; do
+                YAY_UPDATED_PACKAGES+=("$package")
+            done <<< "$outdated_packages"
+        fi
+
+        # Update and upgrade all packages (including AUR)
+        yay -Syu --noconfirm
+
+        print_info "Cleaning package cache..."
+        # Clean uninstalled packages from cache
+        yay -Sc --noconfirm
+
+        UPDATED_ITEMS+=("Yay AUR packages")
+        print_success "Yay updated successfully"
+    else
+        print_section "Yay (AUR)"
+        print_skip "yay not found, skipping (not installed or not an Arch Linux system)"
+        SKIPPED_ITEMS+=("Yay")
     fi
-
-    # Update and upgrade all packages (including AUR)
-    yay -Syu --noconfirm
-
-    print_info "Cleaning package cache..."
-    # Clean uninstalled packages from cache
-    yay -Sc --noconfirm
-
-    UPDATED_ITEMS+=("Yay AUR packages")
-    print_success "Yay updated successfully"
 else
     print_section "Yay (AUR)"
-    print_skip "yay not found, skipping (not installed or not an Arch Linux system)"
+    print_skip "Yay skipped (not requested by user)"
     SKIPPED_ITEMS+=("Yay")
 fi
 
@@ -297,16 +370,17 @@ fi
 # Update NPM Global Packages
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Check if jq is available (required for JSON parsing)
-if ! command_exists jq; then
-    print_section "NPM Global Packages"
-    print_skip "jq not found, skipping npm updates (jq is required for JSON parsing)"
-    SKIPPED_ITEMS+=("NPM (jq not installed)")
-elif ! command_exists npm; then
-    print_section "NPM Global Packages"
-    print_skip "npm not found, skipping (Node.js not installed)"
-    SKIPPED_ITEMS+=("NPM")
-else
+if [[ "$RUN_NPM" = true ]]; then
+    # Check if jq is available (required for JSON parsing)
+    if ! command_exists jq; then
+        print_section "NPM Global Packages"
+        print_skip "jq not found, skipping npm updates (jq is required for JSON parsing)"
+        SKIPPED_ITEMS+=("NPM (jq not installed)")
+    elif ! command_exists npm; then
+        print_section "NPM Global Packages"
+        print_skip "npm not found, skipping (Node.js not installed)"
+        SKIPPED_ITEMS+=("NPM")
+    else
     print_section "Updating NPM Global Packages"
 
     # Check if ncu (npm-check-updates) is available
@@ -455,6 +529,11 @@ else
             fi
         fi
     fi
+    fi
+else
+    print_section "NPM Global Packages"
+    print_skip "NPM skipped (not requested by user)"
+    SKIPPED_ITEMS+=("NPM")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -523,11 +602,11 @@ fi
 if [[ ${#SKIPPED_ITEMS[@]} -gt 0 ]]; then
     echo "\n${BOLD}${YELLOW}Skipped:${RESET}"
     for item in "${SKIPPED_ITEMS[@]}"; do
-        echo "  ${YELLOW}⊘${RESET} $item (not installed)"
+        echo "  ${YELLOW}⊘${RESET} $item"
     done
 fi
 
-echo "\n${BOLD}${GREEN}All available dependencies are up-to-date!${RESET}\n"
+echo "\n${BOLD}${GREEN}All packages are up-to-date!${RESET}\n"
 
 # Clean exit - disable error trapping and wait for any background processes
 trap - ERR
