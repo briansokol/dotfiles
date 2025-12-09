@@ -123,6 +123,11 @@ alias gas='git add . && git status'
 # Micro Alias
 (( $+commands[micro] )) && alias mi='micro'
 
+# Neovim
+alias nv='nvim'
+alias vim='nvim'
+alias nf='fzf -m --preview="bat --color=always {}" --bind "enter:become(nvim {+})"'
+
 # Eza Aliases
 if (( $+commands[eza] )); then
   alias ls='eza --icons=always --group-directories-first --color=always'
