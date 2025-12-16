@@ -4,7 +4,10 @@ config-version = 2
 
 # You can use it to add commands that run after AeroSpace startup.
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
-# after-startup-command = ['exec-and-forget sketchybar']
+after-startup-command = [
+    # 'exec-and-forget sketchybar',
+    'exec-and-forget borders active_color=0xff04a5e5 inactive_color=0xff494d64 width=5.0'
+]
 # exec-on-workspace-change = ['/bin/bash', '-c',
 #     'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
 # ]
@@ -54,6 +57,15 @@ persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", 
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode
 on-mode-changed = []
 
+# Floating Windows
+[[on-window-detected]]
+if.app-name-regex-substring = 'finder'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'quicktime'
+run = 'layout floating'
+
 # Possible values: (qwerty|dvorak|colemak)
 # See https://nikitabobko.github.io/AeroSpace/guide#key-mapping
 [key-mapping]
@@ -73,7 +85,7 @@ on-mode-changed = []
     outer.left =       10
     outer.bottom =     10
     outer.top =        10
-    outer.right =      10
+    outer.right =      100
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
@@ -107,6 +119,14 @@ on-mode-changed = []
     #     activate
     # end tell'
     # '''
+
+    alt-ctrl-shift-f = 'fullscreen'
+    alt-ctrl-f       = 'layout floating tiling'
+
+    alt-shift-left  = 'join-with left'
+    alt-shift-down  = 'join-with down'
+    alt-shift-up    = 'join-with up'
+    alt-shift-right = 'join-with right'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
     alt-slash = 'layout tiles horizontal vertical'
@@ -223,4 +243,4 @@ on-mode-changed = []
 
 # App Launch Keybinds
 [mode.apps.binding] 
-    alt-enter = 'exec-and-forget open -a /Applications/iTerm.app'
+    alt-w = 'exec-and-forget open -a /Applications/iTerm.app'
