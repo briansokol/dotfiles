@@ -243,4 +243,5 @@ run = 'layout floating'
 
 # App Launch Keybinds
 [mode.apps.binding] 
-    alt-w = 'exec-and-forget open -a /Applications/iTerm.app'
+    esc = 'mode main'
+    alt-w = ['exec-and-forget open -a /Applications/iTerm.app', 'mode main']
