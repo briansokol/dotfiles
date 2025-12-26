@@ -13,10 +13,12 @@
 # a full restart to take effect.
 
 font-family = "Monaspace Argon NF"
-font-size = 12
+font-size = 16
 background-opacity = 0.9
 background-blur = true
 window-padding-x = 10
-window-height = 30
-window-width = 100
-theme = Catppuccin Macchiato
+window-height = 35
+window-width = 120
+theme = "Catppuccin Macchiato"
+macos-titlebar-style = tabs
+auto-update = check

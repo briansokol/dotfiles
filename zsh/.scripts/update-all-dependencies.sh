@@ -137,6 +137,10 @@ if [[ "$RUN_ZINIT" = true ]]; then
         sleep 1
         wait 2>/dev/null || true
 
+        print_info "Cleaning Up..."
+        zinit cclear
+        compinit 
+
         # Re-enable error trapping
         trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
     else
