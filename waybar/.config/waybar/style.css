@@ -1,7 +1,7 @@
 @import "mocha.css"; 
 
 * {
-    font-family: "MesloLGS Nerd Font Mono Bold";
+    font-family: "Monaspace Argon NF";
     font-size: 16px;
     min-height: 0;
     font-weight: bold;
@@ -18,8 +18,8 @@ window#waybar {
 
 #window {
     margin: 8px;
-    padding-left: 8;
-    padding-right: 8;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 button {
@@ -65,6 +65,8 @@ button:hover {
 #wireplumber,
 #tray,
 #network,
+#bluetooth,
+#backlight,
 #mode,
 #scratchpad {
   margin-top: 2px;
@@ -86,8 +88,8 @@ button:hover {
 }
 
 #pulseaudio {
-    color: @blue;
-    border-bottom: 2px solid @blue;
+    color: @teal;
+    border-bottom: 2px solid @teal;
 }
 
 #network {
@@ -105,8 +107,18 @@ button:hover {
 }
 
 #battery {
-    color: @green;
-    border-bottom: 2px solid @green;
+    color: @mauve;
+    border-bottom: 2px solid @mauve;
+}
+
+#bluetooth {
+	color: @blue;
+	border-bottom: 2px solid @blue;
+}
+
+#backlight {
+	color: @green;
+	border-bottom: 2px solid @green;
 }
 
 /* If workspaces is the leftmost module, omit left margin */
