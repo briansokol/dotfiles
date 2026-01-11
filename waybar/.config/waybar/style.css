@@ -107,8 +107,8 @@ button:hover {
 }
 
 #battery {
-    color: @mauve;
-    border-bottom: 2px solid @mauve;
+    color: @green;
+    border-bottom: 2px solid @green;
 }
 
 #bluetooth {
@@ -117,8 +117,8 @@ button:hover {
 }
 
 #backlight {
-	color: @green;
-	border-bottom: 2px solid @green;
+	color: @mauve;
+	border-bottom: 2px solid @mauve;
 }
 
 /* If workspaces is the leftmost module, omit left margin */
