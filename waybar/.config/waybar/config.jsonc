@@ -1,13 +1,13 @@
 {
   "position": "top",
-  "modules-left": ["hyprland/workspaces"],
-  "modules-center": ["hyprland/window"],
-  "modules-right": ["network", "pulseaudio", "battery", "clock"],
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-right": ["network", "bluetooth", "pulseaudio", "backlight", "battery", "clock"],
   "clock": {
     "format": "<span foreground='#f5c2e7'>   </span>{:%a %d %H:%M}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
   },
   "battery": {
+  
     "states": {
       "warning": 30,
       "critical": 15
@@ -30,11 +30,39 @@
     "tooltip-format-wifi": "Signal Strenght: {signalStrength}%"
   },
   "pulseaudio": {
-      "format": "{icon}  {volume}%",
-      "format-muted": "",
-      "format-icons": {
-          "default": ["", "", " "]
-      },
-      "on-click": "pavucontrol"
+    "format": "{icon}  {volume}%",
+    "format-muted": "",
+    "format-icons": {
+        "default": ["", "", " "]
+    },
+    "on-click": "pavucontrol"
+  },
+  "bluetooth": {
+    "format": "󰂯 {status}",
+    "format-connected": "󰂱",
+    "format-connected-battery": "󰂱 {device_battery_percentage}%",
+    "format-on": "󰂯",
+    "format-off": "󰂲",
+    "format-disabled": "",
+    "tooltip": true,
+    "tooltip-format": "{status}",
+    "tooltip-format-connected": "{device_alias} {status}"
+  },
+  "cpu": {
+    "format": "  {usage}%",
+    "tooltip": true,
+    "interval": 1,
+    "on-click": "ghostty --gtk-single-instance=true -e htop"
+  },
+  "memory": {
+    "format": "  {}%",
+    "interval": 1,
+    "on-click": "ghostty --gtk-single-instance=true -e htop"
+  },
+  "backlight": {
+    "format": "{icon}  {percent}%",
+    "format-icons": ["󰃞", "󰃟", "󰃠"],
+    "on-scroll-up": "brightnessctl set +5%",
+    "on-scroll-down": "brightnessctl set 5%-"
   }
 }

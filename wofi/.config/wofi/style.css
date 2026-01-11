@@ -52,7 +52,7 @@
 @define-color	crust-rgb  rgb(17, 17, 27);
 
 * {
-  font-family: 'CaskaydiaCove Nerd Font', monospace;
+  font-family: 'Monaspace Argon NF', monospace;
   font-size: 18px;
 }
 
@@ -63,6 +63,7 @@ window {
   border: 2px solid @lavender;
   border-radius: 8px;
   background-color: @base;
+  backdrop-filter: blur(10px);
 }
 
 /* Inner Box */
@@ -101,7 +102,7 @@ window {
 
 #input image {
     border: none;
-    color: @red;
+    color: @lavender;
 }
 
 #input * {
@@ -126,11 +127,16 @@ window {
 
 /* Selected Entry */
 #entry:selected {
-  border: 0.11em solid @lavender;
+  background-color: @lavender;
+  border-radius: 4px;
 }
 
 #entry:selected #text {
-  color: @mauve;
+  color: @base;
+}
+
+#entry:selected arrow {
+  color: @base;
 }
 
 #entry:drop(active) {
