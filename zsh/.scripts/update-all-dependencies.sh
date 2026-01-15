@@ -355,7 +355,8 @@ if [[ "$RUN_YAY" = true ]]; then
 
         print_info "Cleaning package cache..."
         # Clean uninstalled packages from cache
-        yay -Sc --noconfirm
+        # Suppress errors about temporary download files that can't be opened
+        yay -Sc --noconfirm 2>&1 | grep -v "could not open file.*download-" || true
 
         UPDATED_ITEMS+=("Yay AUR packages")
         print_success "Yay updated successfully"
