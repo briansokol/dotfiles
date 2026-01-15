@@ -170,8 +170,5 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 # Add Visual Studio Code (code)
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
-[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
-
-
-# Added by Antigravity
-export PATH="/Users/bsokol/.antigravity/antigravity/bin:$PATH"
+# Claude Code MCP CLI
+export ENABLE_EXPERIMENTAL_MCP_CLI=true
