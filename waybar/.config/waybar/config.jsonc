@@ -3,7 +3,7 @@
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-right": ["network", "bluetooth", "pulseaudio", "backlight", "battery", "clock"],
   "clock": {
-    "format": "<span foreground='#f5c2e7'>   </span>{:%a %d %H:%M}",
+    "format": "<span foreground='#f5c2e7'>   </span>{:%a %d | %I:%M %p}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
   },
   "battery": {
