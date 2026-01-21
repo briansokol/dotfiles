@@ -157,7 +157,19 @@ if [[ ! "$PATH" == *$HOME/.fzf/bin* ]]; then
   PATH="${PATH:+${PATH}:}$HOME/.fzf/bin"
 fi
 source <(fzf --zsh)
-command -v zoxide &>/dev/null && eval "$(zoxide init --cmd cd zsh)"
+# Initialize zoxide with a fallback wrapper
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh)"
+
+  # Create a cd wrapper that falls back to builtin cd
+  cd() {
+    if typeset -f __zoxide_z >/dev/null; then
+      __zoxide_z "$@"
+    else
+      builtin cd "$@"
+    fi
+  }
+fi
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 # Add Visual Studio Code (code)
