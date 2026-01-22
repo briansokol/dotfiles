@@ -128,18 +128,13 @@ if [[ "$RUN_ZINIT" = true ]]; then
         UPDATED_ITEMS+=("Zinit core")
 
         print_info "Updating Zinit plugins..."
-        zinit update
+        zinit update --parallel
 
         UPDATED_ITEMS+=("Zinit plugins")
         print_success "Zinit updated successfully"
 
-        # Wait for zinit background processes to complete and suppress their output
-        sleep 1
-        wait 2>/dev/null || true
-
         print_info "Cleaning Up..."
         zinit cclear
-        compinit 
 
         # Re-enable error trapping
         trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
