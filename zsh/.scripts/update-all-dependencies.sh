@@ -88,6 +88,31 @@ RUN_YAY=true
 RUN_NPM=true
 RUN_HOMEBREW=true
 RUN_ZINIT=true
+RUN_GIT_CHECK=true
+
+# Pre-process long flags before getopts
+ARGS=()
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --no-git-check)
+            RUN_GIT_CHECK=false
+            shift
+            ;;
+        -*)
+            # Preserve short flags for getopts
+            ARGS+=("$1")
+            shift
+            ;;
+        *)
+            # Unknown argument
+            ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Restore processed arguments for getopts
+set -- "${ARGS[@]}"
 
 # If any flags are provided, set all to false and enable only requested ones
 if [[ $# -gt 0 ]]; then
@@ -109,6 +134,168 @@ if [[ $# -gt 0 ]]; then
             \?) ;; # Ignore invalid options
         esac
     done
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Git Self-Update Check (Dotfiles)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if [[ "$RUN_GIT_CHECK" = true ]]; then
+    DOTFILES_DIR="$HOME/dotfiles"
+
+    # Check if dotfiles directory exists
+    if [[ -d "$DOTFILES_DIR" ]]; then
+        print_section "Checking for Dotfiles Updates"
+
+        # Temporarily disable error trapping for git operations
+        trap - ERR
+
+        # Save current directory and change to dotfiles
+        ORIGINAL_DIR="$PWD"
+        cd "$DOTFILES_DIR" 2>/dev/null || {
+            print_warning "Could not access dotfiles directory at $DOTFILES_DIR"
+            print_skip "Git self-update check skipped"
+            SKIPPED_ITEMS+=("Git self-update (directory not accessible)")
+            # Re-enable error trapping
+            trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+        }
+
+        # Verify we're in a git repository
+        if ! git rev-parse --git-dir > /dev/null 2>&1; then
+            print_warning "Not in a git repository"
+            print_skip "Git self-update check skipped"
+            SKIPPED_ITEMS+=("Git self-update (not a git repo)")
+            # Re-enable error trapping
+            trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+            cd "$ORIGINAL_DIR" 2>/dev/null || true
+        else
+            # Check for uncommitted changes (modified files)
+            if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+                # Re-enable error trapping before exit
+                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                print_warning "You have uncommitted changes in your dotfiles:"
+                git status --short
+                echo ""
+                print_warning "Please commit or stash your changes before running this script."
+                print_info "Run: git status    # to see changes"
+                print_info "     git add .     # to stage changes"
+                print_info "     git commit    # to commit changes"
+                print_info "     git stash     # to temporarily stash changes"
+                echo ""
+                cd "$ORIGINAL_DIR" 2>/dev/null || true
+                exit 1
+            fi
+
+            # Check for untracked files
+            UNTRACKED=$(git ls-files --others --exclude-standard 2>/dev/null || true)
+            if [[ -n "$UNTRACKED" ]]; then
+                # Re-enable error trapping before exit
+                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                print_warning "You have untracked files in your dotfiles:"
+                echo "$UNTRACKED" | sed 's/^/  /'
+                echo ""
+                print_warning "Please commit these files or add them to .gitignore before running this script."
+                print_info "Run: git add <file>        # to stage specific files"
+                print_info "     git add .             # to stage all files"
+                print_info "     echo <file> >> .gitignore  # to ignore files"
+                echo ""
+                cd "$ORIGINAL_DIR" 2>/dev/null || true
+                exit 1
+            fi
+
+            print_info "Fetching latest changes from remote..."
+            if ! git fetch --prune origin 2>/dev/null; then
+                # Re-enable error trapping
+                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                print_warning "Failed to fetch from remote repository"
+                print_warning "This might be a network issue or remote access problem"
+                print_info "Continuing with package updates..."
+                SKIPPED_ITEMS+=("Git self-update (fetch failed)")
+                cd "$ORIGINAL_DIR" 2>/dev/null || true
+            else
+                # Check if we're behind the remote
+                # Determine main branch (main or master)
+                if git show-ref --verify --quiet refs/remotes/origin/main; then
+                    MAIN_BRANCH="main"
+                elif git show-ref --verify --quiet refs/remotes/origin/master; then
+                    MAIN_BRANCH="master"
+                else
+                    print_warning "Could not find origin/main or origin/master"
+                    print_skip "Git self-update check skipped"
+                    SKIPPED_ITEMS+=("Git self-update (no main branch found)")
+                    # Re-enable error trapping
+                    trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                    cd "$ORIGINAL_DIR" 2>/dev/null || true
+                fi
+
+                if [[ -n "$MAIN_BRANCH" ]]; then
+                    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+
+                    # Only check for updates if we're on the main branch
+                    if [[ "$CURRENT_BRANCH" != "$MAIN_BRANCH" ]]; then
+                        print_warning "Not on $MAIN_BRANCH branch (currently on: $CURRENT_BRANCH)"
+                        print_skip "Git self-update check skipped (not on main branch)"
+                        SKIPPED_ITEMS+=("Git self-update (not on main branch)")
+                        # Re-enable error trapping
+                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                        cd "$ORIGINAL_DIR" 2>/dev/null || true
+                    else
+                        COMMITS_BEHIND=$(git rev-list HEAD..origin/$MAIN_BRANCH --count 2>/dev/null || echo "0")
+
+                        if [[ "$COMMITS_BEHIND" -gt 0 ]]; then
+                            print_info "Found $COMMITS_BEHIND new commit(s) to pull:"
+                            git log --oneline HEAD..origin/$MAIN_BRANCH 2>/dev/null | sed 's/^/  /'
+                            echo ""
+
+                            print_info "Pulling latest changes..."
+                            if git pull --ff-only origin "$MAIN_BRANCH" 2>/dev/null; then
+                                # Re-enable error trapping before exit
+                                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                                print_success "Successfully pulled latest dotfiles changes"
+                                echo ""
+                                print_warning "Your dotfiles have been updated!"
+                                print_info "Please close this shell and open a new one for changes to take effect."
+                                print_info "Then re-run this script to continue with package updates."
+                                echo ""
+                                cd "$ORIGINAL_DIR" 2>/dev/null || true
+                                exit 0
+                            else
+                                # Re-enable error trapping before exit
+                                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                                print_warning "Failed to pull changes from remote"
+                                print_warning "This might indicate merge conflicts or other issues"
+                                print_info "Please resolve manually:"
+                                print_info "  cd ~/dotfiles"
+                                print_info "  git status"
+                                print_info "  git pull"
+                                echo ""
+                                cd "$ORIGINAL_DIR" 2>/dev/null || true
+                                exit 1
+                            fi
+                        else
+                            print_success "Dotfiles are up-to-date with remote"
+                            # Re-enable error trapping
+                            trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                            cd "$ORIGINAL_DIR" 2>/dev/null || true
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    else
+        print_section "Git Self-Update Check"
+        print_skip "Dotfiles directory not found at $DOTFILES_DIR"
+        SKIPPED_ITEMS+=("Git self-update (directory not found)")
+    fi
+else
+    print_section "Git Self-Update Check"
+    print_skip "Git self-update check disabled (--no-git-check flag)"
+    SKIPPED_ITEMS+=("Git self-update (disabled by flag)")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
