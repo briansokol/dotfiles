@@ -169,54 +169,17 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
             trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
             cd "$ORIGINAL_DIR" 2>/dev/null || true
         else
-            # Check for uncommitted changes (modified files)
-            if ! git diff-index --quiet HEAD -- 2>/dev/null; then
-                # Re-enable error trapping before exit
-                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
-
-                print_warning "You have uncommitted changes in your dotfiles:"
-                git status --short
-                echo ""
-                print_warning "Please commit or stash your changes before running this script."
-                print_info "Run: git status    # to see changes"
-                print_info "     git add .     # to stage changes"
-                print_info "     git commit    # to commit changes"
-                print_info "     git stash     # to temporarily stash changes"
-                echo ""
-                cd "$ORIGINAL_DIR" 2>/dev/null || true
-                exit 1
-            fi
-
-            # Check for untracked files
-            UNTRACKED=$(git ls-files --others --exclude-standard 2>/dev/null || true)
-            if [[ -n "$UNTRACKED" ]]; then
-                # Re-enable error trapping before exit
-                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
-
-                print_warning "You have untracked files in your dotfiles:"
-                echo "$UNTRACKED" | sed 's/^/  /'
-                echo ""
-                print_warning "Please commit these files or add them to .gitignore before running this script."
-                print_info "Run: git add <file>        # to stage specific files"
-                print_info "     git add .             # to stage all files"
-                print_info "     echo <file> >> .gitignore  # to ignore files"
-                echo ""
-                cd "$ORIGINAL_DIR" 2>/dev/null || true
-                exit 1
-            fi
-
+            # Fetch latest changes from remote
             print_info "Fetching latest changes from remote..."
             if ! git fetch --prune origin 2>/dev/null; then
-                # Re-enable error trapping
-                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
-
                 print_warning "Failed to fetch from remote repository"
                 print_warning "This might be a network issue or remote access problem"
                 print_info "Continuing with package updates..."
                 SKIPPED_ITEMS+=("Git self-update (fetch failed)")
+                # Re-enable error trapping
+                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
                 cd "$ORIGINAL_DIR" 2>/dev/null || true
             else
-                # Check if we're behind the remote
                 # Determine main branch (main or master)
                 if git show-ref --verify --quiet refs/remotes/origin/main; then
                     MAIN_BRANCH="main"
@@ -243,45 +206,118 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                         trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
                         cd "$ORIGINAL_DIR" 2>/dev/null || true
                     else
+                        # Check if we're behind the remote
                         COMMITS_BEHIND=$(git rev-list HEAD..origin/$MAIN_BRANCH --count 2>/dev/null || echo "0")
 
-                        if [[ "$COMMITS_BEHIND" -gt 0 ]]; then
-                            print_info "Found $COMMITS_BEHIND new commit(s) to pull:"
-                            git log --oneline HEAD..origin/$MAIN_BRANCH 2>/dev/null | sed 's/^/  /'
-                            echo ""
-
-                            print_info "Pulling latest changes..."
-                            if git pull --ff-only origin "$MAIN_BRANCH" 2>/dev/null; then
-                                # Re-enable error trapping before exit
-                                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
-
-                                print_success "Successfully pulled latest dotfiles changes"
-                                echo ""
-                                print_warning "Your dotfiles have been updated!"
-                                print_info "Please close this shell and open a new one for changes to take effect."
-                                print_info "Then re-run this script to continue with package updates."
-                                echo ""
-                                cd "$ORIGINAL_DIR" 2>/dev/null || true
-                                exit 0
-                            else
-                                # Re-enable error trapping before exit
-                                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
-
-                                print_warning "Failed to pull changes from remote"
-                                print_warning "This might indicate merge conflicts or other issues"
-                                print_info "Please resolve manually:"
-                                print_info "  cd ~/dotfiles"
-                                print_info "  git status"
-                                print_info "  git pull"
-                                echo ""
-                                cd "$ORIGINAL_DIR" 2>/dev/null || true
-                                exit 1
-                            fi
-                        else
+                        if [[ "$COMMITS_BEHIND" -eq 0 ]]; then
+                            # No updates available, continue with script
                             print_success "Dotfiles are up-to-date with remote"
                             # Re-enable error trapping
                             trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
                             cd "$ORIGINAL_DIR" 2>/dev/null || true
+                        else
+                            # Updates are available - check if repo is clean
+                            print_info "Found $COMMITS_BEHIND new commit(s) available:"
+                            git log --oneline HEAD..origin/$MAIN_BRANCH 2>/dev/null | sed 's/^/  /'
+                            echo ""
+
+                            # Check for uncommitted changes (modified files)
+                            HAS_MODIFIED=false
+                            if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+                                HAS_MODIFIED=true
+                            fi
+
+                            # Check for untracked files
+                            UNTRACKED=$(git ls-files --others --exclude-standard 2>/dev/null || true)
+                            HAS_UNTRACKED=false
+                            if [[ -n "$UNTRACKED" ]]; then
+                                HAS_UNTRACKED=true
+                            fi
+
+                            # If repo is dirty, warn but continue
+                            if [[ "$HAS_MODIFIED" = true ]] || [[ "$HAS_UNTRACKED" = true ]]; then
+                                print_warning "Cannot pull updates - you have uncommitted changes:"
+                                git status --short 2>/dev/null
+                                echo ""
+                                print_warning "Updates are available but can't be pulled until you commit your changes."
+                                print_info "To pull these updates later, commit your changes and re-run this script:"
+                                print_info "  cd ~/dotfiles"
+                                print_info "  git status           # to see changes"
+                                print_info "  git add .            # to stage changes"
+                                print_info "  git commit -m '...'  # to commit changes"
+                                print_info "  git pull --rebase    # to pull and rebase"
+                                echo ""
+                                print_info "Continuing with package updates..."
+                                SKIPPED_ITEMS+=("Git self-update (uncommitted changes)")
+                                # Re-enable error trapping
+                                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                                cd "$ORIGINAL_DIR" 2>/dev/null || true
+                            else
+                                # Repo is clean, check for unpushed local commits
+                                COMMITS_AHEAD=$(git rev-list origin/$MAIN_BRANCH..HEAD --count 2>/dev/null || echo "0")
+
+                                if [[ "$COMMITS_AHEAD" -eq 0 ]]; then
+                                    # No local commits, use fast-forward pull
+                                    print_info "Pulling latest changes..."
+                                    if git pull --ff-only origin "$MAIN_BRANCH" 2>/dev/null; then
+                                        # Re-enable error trapping before exit
+                                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                                        print_success "Successfully pulled latest dotfiles changes"
+                                        echo ""
+                                        print_warning "Your dotfiles have been updated!"
+                                        print_info "Please close this shell and open a new one for changes to take effect."
+                                        print_info "Then re-run this script to continue with package updates."
+                                        echo ""
+                                        cd "$ORIGINAL_DIR" 2>/dev/null || true
+                                        exit 0
+                                    else
+                                        # Re-enable error trapping before exit
+                                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                                        print_warning "Failed to pull changes from remote"
+                                        print_warning "This might indicate merge conflicts or other issues"
+                                        print_info "Please resolve manually:"
+                                        print_info "  cd ~/dotfiles"
+                                        print_info "  git status"
+                                        print_info "  git pull"
+                                        echo ""
+                                        cd "$ORIGINAL_DIR" 2>/dev/null || true
+                                        exit 1
+                                    fi
+                                else
+                                    # Have local commits, use rebase
+                                    print_info "You have $COMMITS_AHEAD local commit(s) ahead of remote"
+                                    print_info "Using rebase to replay your commits on top of remote changes..."
+                                    if git pull --rebase origin "$MAIN_BRANCH" 2>/dev/null; then
+                                        # Re-enable error trapping before exit
+                                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                                        print_success "Successfully rebased local commits on top of remote changes"
+                                        echo ""
+                                        print_warning "Your dotfiles have been updated!"
+                                        print_info "Please close this shell and open a new one for changes to take effect."
+                                        print_info "Then re-run this script to continue with package updates."
+                                        echo ""
+                                        cd "$ORIGINAL_DIR" 2>/dev/null || true
+                                        exit 0
+                                    else
+                                        # Re-enable error trapping before exit
+                                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+                                        print_warning "Failed to rebase changes from remote"
+                                        print_warning "This might indicate merge conflicts during rebase"
+                                        print_info "Please resolve manually:"
+                                        print_info "  cd ~/dotfiles"
+                                        print_info "  git status"
+                                        print_info "  git rebase --abort      # to cancel the rebase"
+                                        print_info "  git pull --rebase       # to try again"
+                                        echo ""
+                                        cd "$ORIGINAL_DIR" 2>/dev/null || true
+                                        exit 1
+                                    fi
+                                fi
+                            fi
                         fi
                     fi
                 fi
