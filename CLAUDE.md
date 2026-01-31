@@ -11,7 +11,7 @@ This is a Stow-based dotfiles management repository for cross-platform developme
 - **Stow Package Pattern**: Each directory (zsh, nvim, tmux, etc.) can be installed independently via `stow <package>`
 - **XDG Base Directory Compliance**: Configurations follow `package_name/.config/app_name/` structure
 - **Cross-Platform Support**: Conditional loading based on platform detection (macOS vs Linux)
-- **Theme Consistency**: Catppuccin color scheme used across Starship, Tmux, and Waybar
+- **Theme Consistency**: Catppuccin color scheme used across Starship, Tmux, Waybar, and SwayOSD
 - **Plugin-Based Management**: Zinit (Zsh), LazyVim (Neovim), TPM (Tmux) for modular configurations
 
 ## Common Commands
@@ -84,6 +84,13 @@ la                              # eza with git status, icons, and details (or ls
 - Plugin manager: [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
 - Installation: `git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`
 
+**SwayOSD (Linux/Wayland)**
+- On-screen display daemon for volume, brightness, and system controls
+- Catppuccin mocha theme with custom styling
+- Config: [swayosd/.config/swayosd/config.toml](swayosd/.config/swayosd/config.toml)
+- Styling: [swayosd/.config/swayosd/style.css](swayosd/.config/swayosd/style.css)
+- Provides visual feedback for hardware controls in Wayland compositors
+
 ### Shell Integration Ecosystem
 
 **Critical Integrations** (defined in [zsh/.zshrc](zsh/.zshrc)):
@@ -150,7 +157,7 @@ fi
 
 **Platform-Specific Packages**:
 - **macOS**: aerospace (window manager), iterm, sketchybar
-- **Linux/Wayland**: hyprland (window manager), waybar, wofi, swaync, ghostty
+- **Linux/Wayland**: hyprland (window manager), waybar, wofi, swaync, swayosd, ghostty
 
 ### Git Branch Management
 

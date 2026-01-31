@@ -1,0 +1,6 @@
+[server]
+# Position from top of screen (0.0 = top, 0.5 = center, 1.0 = bottom)
+top_margin = 0.12
+
+# Show percentage in OSD
+show_percentage = true
