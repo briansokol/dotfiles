@@ -1,61 +1,24 @@
 @import "mocha.css"; 
 
 * {
-    font-family: "Monaspace Argon NF";
-    font-size: 16px;
+    font-family: "SFRounded Nerd Font";
+    font-size: 15px;
     min-height: 0;
     font-weight: bold;
+    transition: padding 0.1s ease;
 }
 
 window#waybar {
     background: transparent;
-    background-color: transparent;
-    color: @overlay0;
-    transition-property: background-color;
-    transition-duration: 0.1s;
-}
-
-#window {
-    margin: 8px;
-    padding-left: 8px;
-    padding-right: 8px;
-    color: @text;
 }
 
 button {
     box-shadow: none;
     border: none;
-    border-radius: 50%;
 }
 
-button:hover {
-    background-color: @surface2;
-    color: @base;
-}
-
-#workspaces button {
-    padding: 4px 8px;
-    margin: 4px;
-    background-color: @surface2;
-    color: @base;
-    border-radius: 50%;
-}
-
-#workspaces button.focused {
-    background-color: @mauve;
-    color: @base;
-}
-
-#workspaces button.active {
-    background-color: @mauve;
-    color: @base;
-}
-
-#workspaces button.urgent {
-    background-color: @red;
-    color: @base;
-}
-
+#window,
+#workspaces button,
 #pulseaudio,
 #clock,
 #battery,
@@ -73,35 +36,64 @@ button:hover {
 #scratchpad,
 #custom-weather,
 #custom-notification {
-  margin-top: 4px;
-  margin-bottom: 4px;
-  margin-left: 4px;
-  margin-right: 4px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-top: 4px;
-  padding-bottom: 4px;
+  margin: 6px 4px 0;
+  padding: 3px 10px;
   border-radius: 999px;
+  background-color: alpha(@base, 0.7);
 }
 
-#clock {
-    background-color: @maroon;
-    color: @base;
+#workspaces button {
+    color: @mauve;
 }
 
-#clock.date {
+#workspaces button:hover {
     background-color: @mauve;
     color: @base;
 }
 
-#pulseaudio {
-    background-color: @teal;
+#workspaces button.focused {
+    background-color: @mauve;
     color: @base;
 }
 
-#network {
-    background-color: @yellow;
+#workspaces button.active {
+    background-color: @mauve;
     color: @base;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#workspaces button.urgent {
+    background-color: @red;
+    color: @base;
+}
+
+#window {
+    color: @text;
+}
+
+#clock {
+    color: @maroon;
+}
+
+#clock.date {
+    color: @mauve;
+}
+
+#pulseaudio {
+    color: @teal;
+}
+
+#network {
+    color: @yellow;
+}
+
+#cpu {
+    color: @rosewater;
+}
+
+#memory {
+    color: @flamingo;
 }
 
 #idle_inhibitor {
@@ -114,18 +106,15 @@ button:hover {
 }
 
 #battery {
-    background-color: @green;
-    color: @base;
+    color: @green;
 }
 
 #bluetooth {
-	background-color: @blue;
-	color: @base;
+	color: @blue;
 }
 
 #backlight {
-	background-color: @mauve;
-	color: @base;
+	color: @mauve;
 }
 
 /* If workspaces is the leftmost module, omit left margin */
@@ -139,43 +128,13 @@ button:hover {
 }
 
 #custom-vpn {
-    background-color: @lavender;
-    color: @base;
+    color: @lavender;
 }
 
 #custom-notification {
-	background-color: @sky;
-	color: @base;
+	color: @sky;
 }
 
 #custom-weather {
-	background-color: @base;
 	color: @text;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-}
-
-#custom-weather .alt-view {
-  font-style: italic;
-} 
-
-@keyframes blink-condition {
-  from { opacity: 0.75; }
-  to { opacity: 1; }
-}
-
-#custom-weather .hot {
-    color: @maroon;
-}
-
-#custom-weather .cold {
-    color: @blue;
-}
-
-#custom-weather .rain,
-#custom-weather .snow,
-#custom-weather .smoke {
-    animation-name: blink-condition;
-    animation-duration: 1s;
 }
