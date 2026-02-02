@@ -1,8 +1,15 @@
 #!/usr/bin/env sh
 
 sketchybar --add event aerospace_workspace_change
+
+# Get initial active workspaces (non-empty + focused)
+FOCUSED=$(aerospace list-workspaces --focused)
+NON_EMPTY=$(aerospace list-workspaces --monitor all --empty no)
+# Sort with numbers first (reversed), then letters (reversed)
+ACTIVE=$(echo -e "$NON_EMPTY\n$FOCUSED" | grep -v '^$' | sort -u | (grep '^[0-9]' 2>/dev/null | sort -rn; grep '^[^0-9]' 2>/dev/null | sort -r) | uniq)
+
 RED=0xffed8796
-for sid in $(aerospace list-workspaces --all); do
+for sid in $ACTIVE; do
     sketchybar --add item "space.$sid" left \
         --subscribe "space.$sid" aerospace_workspace_change \
         --set "space.$sid" \
@@ -22,15 +29,5 @@ for sid in $(aerospace list-workspaces --all); do
                               label.background.corner_radius=9              \
                               label.drawing=off                             \
         click_script="aerospace workspace $sid" \
-        script="$CONFIG_DIR/plugins/aerospace.sh $sid"
+        script="$CONFIG_DIR/plugins/workspace_manager.sh"
 done
-
-sketchybar   --add item       separator left                          \
-             --set separator  icon=                                  \
-                              icon.font="Monaspace Argon NF:Regular:16.0" \
-                              background.padding_left=15              \
-                              background.padding_right=15             \
-                              label.drawing=off                       \
-                              associated_display=active               \
-                              icon.color=$WHITE
-                              

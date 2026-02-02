@@ -18,7 +18,7 @@ SHADOW=on
 sketchybar --bar     height=50                                         \
                      color=$BAR_COLOR                                  \
                      shadow=$SHADOW                                    \
-                     position=right                                     \
+                     position=left                                     \
                      sticky=on                                         \
                      padding_right=18                                  \
                      padding_left=18                                   \
@@ -45,7 +45,6 @@ sketchybar --bar     height=50                                         \
                      popup.background.shadow.drawing=$SHADOW
 
 # Left
-source "$ITEM_DIR/apple.sh"
 source "$ITEM_DIR/spaces.sh"
 
 ############## FINALIZING THE SETUP ##############
