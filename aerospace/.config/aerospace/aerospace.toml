@@ -164,6 +164,12 @@ alt-6 = 'workspace 6'
 alt-7 = 'workspace 7'
 alt-8 = 'workspace 8'
 alt-9 = 'workspace 9'
+alt-o = 'workspace O' # Outlook
+alt-t = 'workspace T' # Teams Meeting
+alt-s = 'workspace S' # Slack
+alt-f = 'workspace F' # Firefox
+alt-e = 'workspace E' # Edge
+alt-d = 'workspace D' # Discord
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
 alt-shift-1 = ['move-node-to-workspace 1', 'workspace 1']
@@ -175,6 +181,12 @@ alt-shift-6 = ['move-node-to-workspace 6', 'workspace 6']
 alt-shift-7 = ['move-node-to-workspace 7', 'workspace 7']
 alt-shift-8 = ['move-node-to-workspace 8', 'workspace 8']
 alt-shift-9 = ['move-node-to-workspace 9', 'workspace 9']
+alt-shift-o = ['move-node-to-workspace O', 'workspace O'] # Outlook
+alt-shift-t = ['move-node-to-workspace T', 'workspace T'] # Teams Meeting
+alt-shift-s = ['move-node-to-workspace S', 'workspace S'] # Slack
+alt-shift-f = ['move-node-to-workspace F', 'workspace F'] # Firefox
+alt-shift-e = ['move-node-to-workspace E', 'workspace E'] # Edge
+alt-shift-d = ['move-node-to-workspace D', 'workspace D'] # Discord
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
 alt-tab = 'workspace-back-and-forth'
