@@ -1,10 +1,10 @@
 {
   "position": "top",
-  "modules-left": ["hyprland/window"],
-  "modules-center": ["hyprland/workspaces"],
+  "modules-left": ["hyprland/workspaces", "mpris"],
+  "modules-center": ["hyprland/window"],
   "modules-right": ["cpu", "memory", "custom/weather", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
   "clock": {
-    "format": "<span>   </span>{:%I:%M %p | %a %d}",
+    "format": "<span>   </span>{:%I:%M %p %a %d}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
   },
   "battery": {
@@ -93,5 +93,19 @@
     "exec-if": "which wttrbar",
     "exec": "wttrbar --ampm --fahrenheit --mph --nerd --date-format \"%a, %b %d, %Y\"",
     "return-type": "json"
+  },
+  "mpris": {
+    "format": "{player_icon}   {dynamic}",
+    "format-paused": "{status_icon}  {dynamic}",
+    "dynamic-order": ["title", "artist"],
+    "player-icons": {
+      "default": "󰐊",
+      "spotify": "",
+      "firefox": "󰈹",
+      "chromium": "󰀵"
+    },
+    "status-icons": {
+      "paused": "󰏤"
+    }
   }
 }
