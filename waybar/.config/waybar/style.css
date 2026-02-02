@@ -71,6 +71,7 @@ button:hover {
 #backlight,
 #mode,
 #scratchpad,
+#custom-weather,
 #custom-notification {
   margin-top: 4px;
   margin-bottom: 4px;
@@ -145,4 +146,36 @@ button:hover {
 #custom-notification {
 	background-color: @sky;
 	color: @base;
+}
+
+#custom-weather {
+	background-color: @base;
+	color: @text;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+#custom-weather .alt-view {
+  font-style: italic;
+} 
+
+@keyframes blink-condition {
+  from { opacity: 0.75; }
+  to { opacity: 1; }
+}
+
+#custom-weather .hot {
+    color: @maroon;
+}
+
+#custom-weather .cold {
+    color: @blue;
+}
+
+#custom-weather .rain,
+#custom-weather .snow,
+#custom-weather .smoke {
+    animation-name: blink-condition;
+    animation-duration: 1s;
 }
