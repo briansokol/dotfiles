@@ -1,66 +1,67 @@
 {
   "position": "top",
-  "modules-left": ["hyprland/workspaces", "hyprland/window"],
-  "modules-right": ["custom/weather", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
+  "modules-left": ["hyprland/window"],
+  "modules-center": ["hyprland/workspaces"],
+  "modules-right": ["cpu", "memory", "custom/weather", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
   "clock": {
-    "format": "<span foreground='#1e1e2e'>   </span>{:%I:%M %p | %a %d}",
+    "format": "<span>   </span>{:%I:%M %p | %a %d}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
   },
   "battery": {
-  
     "states": {
       "warning": 30,
       "critical": 15
     },
-    "format": "<span size='13000' foreground='#1e1e2e'>{icon} </span> {capacity}%",
-    "format-warning": "<span size='13000' foreground='#1e1e2e'>{icon} </span> {capacity}%",
-    "format-critical": "<span size='13000' foreground='#1e1e2e'>{icon} </span> {capacity}%",
-    "format-charging": "<span size='13000' foreground='#1e1e2e'> </span>{capacity}%",
-    "format-plugged": "<span size='13000' foreground='#1e1e2e'> </span>{capacity}%",
-    "format-alt": "<span size='13000' foreground='#1e1e2e'>{icon} </span> {time}",
-    "format-full": "<span size='13000' foreground='#1e1e2e'> </span>{capacity}%",
+    "format": "<span>{icon} </span> {capacity}%",
+    "format-warning": "<span>{icon} </span> {capacity}%",
+    "format-critical": "<span>{icon} </span> {capacity}%",
+    "format-charging": "<span> </span>{capacity}%",
+    "format-plugged": "<span> </span>{capacity}%",
+    "format-alt": "<span>{icon} </span> {time}",
+    "format-full": "<span> </span>{capacity}%",
     "format-icons": ["", "", "", "", ""],
     "tooltip-format": "{time}"
   },
   "network": {
-    "format-wifi": "<span size='13000' foreground='#1e1e2e'>  </span>{essid}",
-    "format-ethernet": "<span size='13000' foreground='#1e1e2e'>󰤭  </span> Disconnected",
-    "format-linked": "{ifname} (No IP) ",
-    "format-disconnected": "<span size='13000' foreground='#1e1e2e'>  </span>Disconnected",
-    "tooltip-format-wifi": "Signal Strenght: {signalStrength}%"
+    "format-wifi": "<span> </span>",
+    "format-ethernet": "<span>󰤭 </span>",
+    "format-linked": "<span></span>",
+    "format-disconnected": "<span></span>",
+    "tooltip-format-wifi": "{essid}\n{ifname}\nSignal Strength: {signalStrength}%\nIP: {ipaddr}"
   },
   "pulseaudio": {
-    "format": "{icon}  {volume}%",
+    "format": "{icon}",
     "format-muted": "",
     "format-icons": {
         "default": ["", "", " "]
     },
+    "tooltip-format": "Volume: {volume}%",
     "on-click": "pavucontrol"
   },
   "bluetooth": {
-    "format": "󰂯 {status}",
-    "format-connected": "󰂱",
-    "format-connected-battery": "󰂱 {device_battery_percentage}%",
-    "format-on": "󰂯",
-    "format-off": "󰂲",
+    "format": "<span>󰂯 </span>{status}",
+    "format-connected": "<span>󰂱</span>",
+    "format-connected-battery": "<span>󰂱 </span>{device_battery_percentage}%",
+    "format-on": "<span>󰂯</span>",
+    "format-off": "<span>󰂲</span>",
     "format-disabled": "",
     "tooltip": true,
     "tooltip-format": "{status}",
     "tooltip-format-connected": "{device_alias} {status}"
   },
   "cpu": {
-    "format": "  {usage}%",
+    "format": "<span>  </span>{usage}%",
     "tooltip": true,
     "interval": 1,
-    "on-click": "ghostty --gtk-single-instance=true -e htop"
+    "on-click": "ghostty --gtk-single-instance=true -e btop"
   },
   "memory": {
-    "format": "  {}%",
+    "format": "<span>  </span>{}%",
     "interval": 1,
     "on-click": "ghostty --gtk-single-instance=true -e htop"
   },
   "backlight": {
-    "format": "{icon}  {percent}%",
+    "format": "<span>{icon}  </span>{percent}%",
     "format-icons": ["󰃞", "󰃟", "󰃠"],
     "on-scroll-up": "brightnessctl set +5%",
     "on-scroll-down": "brightnessctl set 5%-"
@@ -69,14 +70,14 @@
     "tooltip": false,
     "format": "{icon}",
     "format-icons": {
-      "notification": "󰂚<span foreground='#1e1e2e'><sup></sup></span>",
+      "notification": "󰂚<span></span>",
       "none": "󰂚",
-      "dnd-notification": "󰂛<span foreground='#1e1e2e'><sup></sup></span>",
+      "dnd-notification": "󰂛<span></span>",
       "dnd-none": "󰂛",
-      "inhibited-notification": "<span foreground='#1e1e2e'><sup></sup></span>",
-      "inhibited-none": "󰂚",
-      "dnd-inhibited-notification": "<span foreground='#1e1e2e'><sup></sup></span>",
-      "dnd-inhibited-none": "󰂛"
+      "inhibited-notification": "<span></span>",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "<span></span>",
+      "dnd-inhibited-none": ""
     },
     "return-type": "json",
     "exec-if": "which swaync-client",
@@ -86,10 +87,11 @@
     "escape": true
   },
   "custom/weather": {
-    "exec": "/usr/bin/waybar-weather",
-    "restart-interval": 60,
-    "return-type": "json",
-    "hide-empty-text": true,
-    "on-click": "pkill -USR1 waybar-weather"
+    "format": "{}°",
+    "tooltip": true,
+    "interval": 3600,
+    "exec-if": "which wttrbar",
+    "exec": "wttrbar --ampm --fahrenheit --mph --nerd --date-format \"%a, %b %d, %Y\"",
+    "return-type": "json"
   }
 }
