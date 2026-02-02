@@ -1,7 +1,7 @@
 {
   "position": "top",
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
-  "modules-right": ["network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
+  "modules-right": ["custom/weather", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
   "clock": {
     "format": "<span foreground='#1e1e2e'>   </span>{:%I:%M %p | %a %d}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
@@ -84,5 +84,12 @@
     "on-click": "swaync-client -t -sw",
     "on-click-right": "swaync-client -d -sw",
     "escape": true
+  },
+  "custom/weather": {
+    "exec": "/usr/bin/waybar-weather",
+    "restart-interval": 60,
+    "return-type": "json",
+    "hide-empty-text": true,
+    "on-click": "pkill -USR1 waybar-weather"
   }
 }
