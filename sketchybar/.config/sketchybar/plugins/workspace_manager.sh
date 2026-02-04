@@ -13,7 +13,10 @@ NON_EMPTY=$(aerospace list-workspaces --monitor all --empty no 2>/dev/null)
 
 # Combine focused + non-empty workspaces (focused should always show even if empty)
 # Sort with numbers first (reversed), then letters (reversed)
-ACTIVE_WORKSPACES=$(echo -e "${NON_EMPTY}\n${FOCUSED_WORKSPACE}" | grep -v '^$' | sort -u | (grep '^[0-9]' 2>/dev/null | sort -rn; grep '^[^0-9]' 2>/dev/null | sort -r) | uniq)
+ALL_WORKSPACES=$(echo -e "${NON_EMPTY}\n${FOCUSED_WORKSPACE}" | grep -v '^$' | sort -u)
+NUMBERS=$(echo "$ALL_WORKSPACES" | grep '^[0-9]' | sort -rn)
+LETTERS=$(echo "$ALL_WORKSPACES" | grep '^[^0-9]' | sort -r)
+ACTIVE_WORKSPACES=$(echo -e "${LETTERS}\n${NUMBERS}" | grep -v '^$')
 
 # Get currently displayed workspace items
 CURRENT_ITEMS=$(sketchybar --query bar 2>/dev/null | jq -r '.items[]? // empty' | grep '^space\.' | sed 's/^space\.//')

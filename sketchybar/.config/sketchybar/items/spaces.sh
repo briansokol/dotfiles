@@ -5,8 +5,11 @@ sketchybar --add event aerospace_workspace_change
 # Get initial active workspaces (non-empty + focused)
 FOCUSED=$(aerospace list-workspaces --focused)
 NON_EMPTY=$(aerospace list-workspaces --monitor all --empty no)
-# Sort with numbers first (reversed), then letters (reversed)
-ACTIVE=$(echo -e "$NON_EMPTY\n$FOCUSED" | grep -v '^$' | sort -u | (grep '^[0-9]' 2>/dev/null | sort -rn; grep '^[^0-9]' 2>/dev/null | sort -r) | uniq)
+# Sort with numbers first (at top), then letters (at bottom)
+ALL=$(echo -e "$NON_EMPTY\n$FOCUSED" | grep -v '^$' | sort -u)
+NUMBERS=$(echo "$ALL" | grep '^[0-9]' | sort -rn)
+LETTERS=$(echo "$ALL" | grep '^[^0-9]' | sort -r)
+ACTIVE=$(echo -e "$LETTERS\n$NUMBERS" | grep -v '^$')
 
 RED=0xffed8796
 for sid in $ACTIVE; do
