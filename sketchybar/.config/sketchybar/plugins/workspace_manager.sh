@@ -40,11 +40,11 @@ for workspace in $ACTIVE_WORKSPACES; do
             --subscribe "space.${workspace}" aerospace_workspace_change \
             --set "space.${workspace}" \
                 icon="${workspace}" \
-                icon.padding_left=22 \
-                icon.padding_right=22 \
+                icon.padding_left=10 \
+                icon.padding_right=10 \
                 label.padding_right=33 \
                 icon.highlight_color=$RED \
-                background.color=0x44ffffff \
+                background.color=0x89b4faff \
                 background.corner_radius=5 \
                 background.height=30 \
                 background.drawing=off \
@@ -75,8 +75,12 @@ done
 # Update highlights for all active workspaces
 for workspace in $ACTIVE_WORKSPACES; do
     if [ "$workspace" = "$FOCUSED_WORKSPACE" ]; then
-        sketchybar --set "space.${workspace}" background.drawing=on 2>/dev/null
+        sketchybar --set "space.${workspace}" \
+            background.drawing=on \
+            background.color=0x89b4faff 2>/dev/null
     else
-        sketchybar --set "space.${workspace}" background.drawing=off 2>/dev/null
+        sketchybar --set "space.${workspace}" \
+            background.drawing=on \
+            background.color=0x585b70ff 2>/dev/null
     fi
 done
