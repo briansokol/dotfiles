@@ -3,4 +3,4 @@
 top_margin = 0.12
 
 # Show percentage in OSD
-show_percentage = false
+show_percentage = true

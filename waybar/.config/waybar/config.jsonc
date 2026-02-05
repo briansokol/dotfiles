@@ -2,9 +2,9 @@
   "position": "top",
   "modules-left": ["hyprland/workspaces", "mpris"],
   "modules-center": ["hyprland/window"],
-  "modules-right": ["cpu", "memory", "custom/weather", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
+  "modules-right": ["custom/weather", "cpu", "memory", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
   "clock": {
-    "format": "<span>   </span>{:%I:%M %p %a %d}",
+    "format": "<span>  </span>{:%a %d, %I:%M %p}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
   },
   "battery": {
@@ -12,15 +12,15 @@
       "warning": 30,
       "critical": 15
     },
-    "format": "<span>{icon} </span> {capacity}%",
-    "format-warning": "<span>{icon} </span> {capacity}%",
-    "format-critical": "<span>{icon} </span> {capacity}%",
-    "format-charging": "<span> </span>{capacity}%",
-    "format-plugged": "<span> </span>{capacity}%",
+    "format": "<span>{icon} </span> {time}",
+    "format-warning": "<span>{icon} </span> {time}",
+    "format-critical": "<span>{icon} </span> {time}",
+    "format-charging": "<span>{icon} </span>",
+    "format-plugged": "<span>{icon} </span>",
     "format-alt": "<span>{icon} </span> {time}",
-    "format-full": "<span> </span>{capacity}%",
+    "format-full": "<span>{icon} </span>",
     "format-icons": ["", "", "", "", ""],
-    "tooltip-format": "{time}"
+    "tooltip-format": "{capacity}%"
   },
   "network": {
     "format-wifi": "<span> </span>",
@@ -39,15 +39,16 @@
     "on-click": "pavucontrol"
   },
   "bluetooth": {
-    "format": "<span>󰂯 </span>{status}",
-    "format-connected": "<span>󰂱</span>",
-    "format-connected-battery": "<span>󰂱 </span>{device_battery_percentage}%",
-    "format-on": "<span>󰂯</span>",
-    "format-off": "<span>󰂲</span>",
+    "format": "<span size='13000'>󰂯</span>",
+    "format-connected": "<span size='13000'>󰂱</span>",
+    "format-connected-battery": "<span size='13000'>󰂱</span>",
+    "format-on": "<span size='13000'>󰂯</span>",
+    "format-off": "<span size='13000'>󰂲</span>",
     "format-disabled": "",
     "tooltip": true,
     "tooltip-format": "{status}",
-    "tooltip-format-connected": "{device_alias} {status}"
+    "tooltip-format-connected": "{device_alias} {status} {device_battery_percentage}%",
+    "on-click": "ghostty --gtk-single-instance=true -e bluetui"
   },
   "cpu": {
     "format": "<span>  </span>{usage}%",
@@ -61,10 +62,9 @@
     "on-click": "ghostty --gtk-single-instance=true -e htop"
   },
   "backlight": {
-    "format": "<span>{icon}  </span>{percent}%",
+    "format": "<span>{icon}</span>",
     "format-icons": ["󰃞", "󰃟", "󰃠"],
-    "on-scroll-up": "brightnessctl set +5%",
-    "on-scroll-down": "brightnessctl set 5%-"
+    "tooltip-format": "{percent}%"
   },
   "custom/notification": {
     "tooltip": false,
@@ -98,6 +98,8 @@
     "format": "{player_icon}   {dynamic}",
     "format-paused": "{status_icon}  {dynamic}",
     "dynamic-order": ["title", "artist"],
+    "title-len": 25,
+    "dynamic-len": 45,
     "player-icons": {
       "default": "󰐊",
       "spotify": "",
