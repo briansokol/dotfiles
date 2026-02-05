@@ -29,7 +29,7 @@ button {
 #bluetooth,
 #custom-weather,
 #custom-notification {
-  padding: 3px 10px;
+  padding: 3px 8px;
   background-color: alpha(@crust, 0.7);
   color: @text;
 }
