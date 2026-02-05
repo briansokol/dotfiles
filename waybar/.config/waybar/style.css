@@ -24,23 +24,46 @@ button {
 #battery,
 #cpu,
 #memory,
-#disk,
-#temperature,
 #backlight,
-#wireplumber,
-#tray,
 #network,
 #bluetooth,
-#backlight,
-#mode,
-#scratchpad,
 #custom-weather,
 #custom-notification {
-  margin: 6px 4px 0;
   padding: 3px 10px;
-  border-radius: 999px;
-  background-color: alpha(@base, 0.7);
+  background-color: alpha(@crust, 0.7);
   color: @text;
+}
+
+#full-segments,
+#window,
+#workspaces button,
+#mpris {
+    margin: 6px 4px 0;
+    border-radius: 999px;
+}
+
+#left-segments,
+#clock,
+#network,
+#custom-weather {
+    margin: 6px 0 0 4px;
+    border-radius: 999px 0 0 999px;
+}
+
+#center-segments,
+#backlight,
+#pulseaudio,
+#bluetooth,
+#cpu {
+    margin: 6px 0 0;
+}
+
+#right-segments,
+#custom-notification,
+#battery,
+#memory {
+    margin: 6px 4px 0 0;
+    border-radius: 0 999px 999px 0;
 }
 
 #workspaces button {
