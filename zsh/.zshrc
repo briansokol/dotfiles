@@ -8,44 +8,49 @@ export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
 #   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 # fi
 
-if [[ -f "/opt/homebrew/bin/brew" ]] then
+if [[ -f "/opt/homebrew/bin/brew" && -z "$HOMEBREW_PREFIX" ]] then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
 # Set the directory we want to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
-# Download Zinit, if it's not there yet
-[ ! -d $ZINIT_HOME ] && mkdir -p "$(dirname $ZINIT_HOME)"
-[ ! -d $ZINIT_HOME/.git ] && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+# Only initialize zinit if not already loaded
+if [[ -z "$__ZINIT_LOADED" ]]; then
+  # Download Zinit, if it's not there yet
+  [ ! -d $ZINIT_HOME ] && mkdir -p "$(dirname $ZINIT_HOME)"
+  [ ! -d $ZINIT_HOME/.git ] && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 
-# Source/Load zinit
-source "${ZINIT_HOME}/zinit.zsh"
+  # Source/Load zinit
+  source "${ZINIT_HOME}/zinit.zsh"
 
-# Add in Powerlevel10k
-# zinit ice depth=1; zinit light romkatv/powerlevel10k
+  # Add in Powerlevel10k
+  # zinit ice depth=1; zinit light romkatv/powerlevel10k
 
-# Add in zsh plugins
-zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-completions
-zinit light zsh-users/zsh-autosuggestions
-zinit light Aloxaf/fzf-tab
+  # Add in zsh plugins
+  zinit light zsh-users/zsh-syntax-highlighting
+  zinit light zsh-users/zsh-completions
+  zinit light zsh-users/zsh-autosuggestions
+  zinit light Aloxaf/fzf-tab
 
-# Add in snippets
-zinit snippet OMZL::git.zsh
-zinit snippet OMZL::nvm.zsh
-zinit snippet OMZP::git
-zinit snippet OMZP::sudo
-zinit snippet OMZP::brew
-zinit snippet OMZP::gh
-zinit snippet OMZP::npm
-zinit snippet OMZP::nvm
-zinit snippet OMZP::node
-zinit snippet OMZP::command-not-found
+  # Add in snippets
+  zinit snippet OMZL::git.zsh
+  zinit snippet OMZL::nvm.zsh
+  zinit snippet OMZP::git
+  zinit snippet OMZP::sudo
+  zinit snippet OMZP::brew
+  zinit snippet OMZP::gh
+  zinit snippet OMZP::npm
+  zinit snippet OMZP::nvm
+  zinit snippet OMZP::node
+  zinit snippet OMZP::command-not-found
 
-# Load completions
-autoload -Uz compinit && compinit
-zinit cdreplay -q
+  # Load completions
+  autoload -Uz compinit && compinit
+  zinit cdreplay -q
+
+  __ZINIT_LOADED=1
+fi
 
 # History
 HISTSIZE=5000
@@ -68,7 +73,7 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
 # Run nvm autoload
-if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
+if [[ -s "$HOME/.nvm/nvm.sh" && -z "$NVM_DIR" ]]; then
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
@@ -81,7 +86,10 @@ if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
       nvm use default --silent
     fi
   }
-  add-zsh-hook chpwd load-nvmrc
+  # Only add the hook if it's not already registered
+  if (( ! ${chpwd_functions[(I)load-nvmrc]} )); then
+    add-zsh-hook chpwd load-nvmrc
+  fi
   load-nvmrc
 fi
 
@@ -89,8 +97,10 @@ fi
 # [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Load Starship if installed
-STARSHIP_CONFIG=${XDG_CONFIG_HOME}/starship.toml
-command -v starship &>/dev/null && eval "$(starship init zsh)"
+if [[ -z "$STARSHIP_SHELL" ]]; then
+  STARSHIP_CONFIG=${XDG_CONFIG_HOME}/starship.toml
+  command -v starship &>/dev/null && eval "$(starship init zsh)"
+fi
 
 # User configuration
 DEFAULT_USER=$(whoami)
@@ -156,10 +166,17 @@ alias pr='pnpm remove'
 if [[ ! "$PATH" == *$HOME/.fzf/bin* ]]; then
   PATH="${PATH:+${PATH}:}$HOME/.fzf/bin"
 fi
-source <(fzf --zsh)
+
+# Only initialize fzf once
+if [[ -z "$__FZF_LOADED" ]]; then
+  source <(fzf --zsh)
+  __FZF_LOADED=1
+fi
+
 # Initialize zoxide with a fallback wrapper
-if command -v zoxide &>/dev/null; then
+if command -v zoxide &>/dev/null && [[ -z "$__ZOXIDE_LOADED" ]]; then
   eval "$(zoxide init zsh)"
+  __ZOXIDE_LOADED=1
 
   # Create a cd wrapper that falls back to builtin cd
   cd() {
@@ -175,7 +192,11 @@ fi
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 # Add Visual Studio Code (code)
-[ -d "/Applications/Visual Studio Code.app/Contents/Resources/app/bin" ] && export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+if [[ -d "/Applications/Visual Studio Code.app/Contents/Resources/app/bin" && ! "$PATH" == */Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin* ]]; then
+  export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+fi
 
 # Local bin
-[ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"
+if [[ -d "$HOME/.local/bin" && ! "$PATH" == *$HOME/.local/bin* ]]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
