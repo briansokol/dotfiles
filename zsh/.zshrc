@@ -97,9 +97,10 @@ fi
 # [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Load Starship if installed
-if [[ -z "$STARSHIP_SHELL" ]]; then
+# Check if starship_precmd function exists rather than env var (which tmux inherits)
+if command -v starship &>/dev/null && ! typeset -f starship_precmd >/dev/null; then
   STARSHIP_CONFIG=${XDG_CONFIG_HOME}/starship.toml
-  command -v starship &>/dev/null && eval "$(starship init zsh)"
+  eval "$(starship init zsh)"
 fi
 
 # User configuration
@@ -167,16 +168,14 @@ if [[ ! "$PATH" == *$HOME/.fzf/bin* ]]; then
   PATH="${PATH:+${PATH}:}$HOME/.fzf/bin"
 fi
 
-# Only initialize fzf once
-if [[ -z "$__FZF_LOADED" ]]; then
+# Only initialize fzf once (check if fzf widgets are already loaded)
+if command -v fzf &>/dev/null && ! bindkey | grep -q "fzf-file-widget"; then
   source <(fzf --zsh)
-  __FZF_LOADED=1
 fi
 
-# Initialize zoxide with a fallback wrapper
-if command -v zoxide &>/dev/null && [[ -z "$__ZOXIDE_LOADED" ]]; then
+# Initialize zoxide with a fallback wrapper (check if __zoxide_z function exists)
+if command -v zoxide &>/dev/null && ! typeset -f __zoxide_z >/dev/null; then
   eval "$(zoxide init zsh)"
-  __ZOXIDE_LOADED=1
 
   # Create a cd wrapper that falls back to builtin cd
   cd() {
