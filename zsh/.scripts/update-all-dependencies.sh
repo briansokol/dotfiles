@@ -55,6 +55,19 @@ print_skip() {
     echo "${YELLOW}⊘${RESET}  $1"
 }
 
+# Helper function to reload zshrc
+reload_zshrc() {
+    if [[ -f "$HOME/.zshrc" ]]; then
+        print_info "Reloading .zshrc..."
+        # Temporarily disable error trapping while sourcing
+        trap - ERR
+        source "$HOME/.zshrc" 2>/dev/null || true
+        # Re-enable error trapping
+        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+        print_success "Shell configuration reloaded"
+    fi
+}
+
 # Track what was updated
 UPDATED_ITEMS=()
 SKIPPED_ITEMS=()
@@ -260,17 +273,15 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                     # No local commits, use fast-forward pull
                                     print_info "Pulling latest changes..."
                                     if git pull --ff-only origin "$MAIN_BRANCH" 2>/dev/null; then
-                                        # Re-enable error trapping before exit
+                                        # Re-enable error trapping
                                         trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
 
                                         print_success "Successfully pulled latest dotfiles changes"
                                         echo ""
-                                        print_warning "Your dotfiles have been updated!"
-                                        print_info "Please close this shell and open a new one for changes to take effect."
-                                        print_info "Then re-run this script to continue with package updates."
-                                        echo ""
                                         cd "$ORIGINAL_DIR" 2>/dev/null || true
-                                        exit 0
+                                        reload_zshrc
+                                        echo ""
+                                        print_info "Continuing with package updates..."
                                     else
                                         # Re-enable error trapping before exit
                                         trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
@@ -290,17 +301,15 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                     print_info "You have $COMMITS_AHEAD local commit(s) ahead of remote"
                                     print_info "Using rebase to replay your commits on top of remote changes..."
                                     if git pull --rebase origin "$MAIN_BRANCH" 2>/dev/null; then
-                                        # Re-enable error trapping before exit
+                                        # Re-enable error trapping
                                         trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
 
                                         print_success "Successfully rebased local commits on top of remote changes"
                                         echo ""
-                                        print_warning "Your dotfiles have been updated!"
-                                        print_info "Please close this shell and open a new one for changes to take effect."
-                                        print_info "Then re-run this script to continue with package updates."
-                                        echo ""
                                         cd "$ORIGINAL_DIR" 2>/dev/null || true
-                                        exit 0
+                                        reload_zshrc
+                                        echo ""
+                                        print_info "Continuing with package updates..."
                                     else
                                         # Re-enable error trapping before exit
                                         trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
@@ -830,6 +839,9 @@ if [[ ${#SKIPPED_ITEMS[@]} -gt 0 ]]; then
 fi
 
 echo "\n${BOLD}${GREEN}All packages are up-to-date!${RESET}\n"
+
+# Reload shell configuration at the end
+reload_zshrc
 
 # Clean exit - disable error trapping and wait for any background processes
 trap - ERR
