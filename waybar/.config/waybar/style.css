@@ -2,7 +2,7 @@
 
 * {
     font-family: "SFRounded Nerd Font";
-    font-size: 15px;
+    font-size: 16px;
     min-height: 0;
     font-weight: bold;
 }
@@ -16,7 +16,12 @@ button {
     border: none;
 }
 
-#window,
+#window {
+    padding: 3px 8px;
+    color: @text;
+    text-shadow: 2px 2px 4px @crust;
+}
+
 #workspaces button,
 #mpris,
 #pulseaudio,
@@ -35,7 +40,6 @@ button {
 }
 
 #full-segments,
-#window,
 #workspaces button,
 #mpris {
     margin: 6px 4px 0;
@@ -68,6 +72,7 @@ button {
 
 #workspaces button {
     color: @mauve;
+    background-color: alpha(@surface1, 0.5);
 }
 
 #workspaces button:hover {
@@ -90,10 +95,6 @@ button {
 #workspaces button.urgent {
     background-color: @red;
     color: @base;
-}
-
-#window {
-    color: @text;
 }
 
 #clock {
