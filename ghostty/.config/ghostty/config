@@ -19,6 +19,6 @@ background-blur = true
 window-padding-x = 10
 window-height = 35
 window-width = 120
-theme = "Catppuccin Macchiato"
+theme = "Catppuccin Mocha"
 macos-titlebar-style = tabs
 auto-update = check
