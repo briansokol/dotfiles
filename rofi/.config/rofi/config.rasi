@@ -10,6 +10,7 @@ configuration {
   icon-theme: "Papirus";
 }
 
+@theme "/dev/null"
 @import "catppuccin-mocha.rasi"
 
 * {
@@ -36,7 +37,7 @@ window {
   border-radius: 50px;
   padding: 25px 25px 20px 25px;
   border: 2px;
-    border-color: @bg-selected;
+  border-color: @bg-selected;
 }
 
 element {
@@ -50,62 +51,62 @@ element normal.normal {
 }
 
 element normal.urgent {
-    background-color: @bg;
-    text-color:       @fg-urgent;
+  background-color: @bg;
+  text-color: @fg-urgent;
 }
 
 element normal.active {
-    background-color: @bg;
-    text-color:       @fg;
+  background-color: @bg;
+  text-color: @fg;
 }
 
 element alternate.normal {
-    background-color: @bg;
-    text-color:       @fg;
+  background-color: @bg;
+  text-color: @fg;
 }
 
 element alternate.urgent {
-    background-color: @bg;
-    text-color:       @fg-urgent;
+  background-color: @bg;
+  text-color: @fg-urgent;
 }
 
 element alternate.active {
-    background-color: @bg;
-    text-color:       @fg;
+  background-color: @bg;
+  text-color: @fg;
 }
 
 element selected.normal {
-    background-color: @bg-selected;
-    text-color:       @fg-selected;
+  background-color: @bg-selected;
+  text-color: @fg-selected;
 }
 
 element selected.urgent {
-    background-color: @bg-urgent;
-    text-color:       @fg;
+  background-color: @bg-urgent;
+  text-color: @fg;
 }
 
 element selected.active {
-   background-color: @bg-selected;
-    text-color:       @fg-selected;
+  background-color: @bg-selected;
+  text-color: @fg-selected;
 }
 
 element-text {
   background-color: transparent;
-      highlight:        inherit;
-    text-color:       inherit;
+  highlight: inherit;
+  text-color: inherit;
   vertical-align: 0.5;
 }
 
 element-icon {
   size: 40;
-  padding: 0;
+  padding: 0 10px 0 0;
   background-color: transparent;
-      cursor:           inherit;
-    text-color:       inherit;
+  cursor: inherit;
+  text-color: inherit;
 }
 
 inputbar {
-  children:   [ "prompt","entry" ];
+  children: [ "prompt","entry" ];
   background-color: @bg;
 }
 
@@ -134,19 +135,19 @@ entry {
   padding: 12px;
   background-color: @bg;
   text-color: @fg;
-      cursor:            text;
-    spacing:           0;
-    placeholder-color: @fg-placeholder;
-    placeholder:       "Search...";
+  cursor: text;
+  spacing: 0;
+  placeholder-color: @fg-placeholder;
+  placeholder: "Search...";
 }
 
 scrollbar {
-    width:        4px;
-    padding:      0;
-    handle-width: 8px;
-    margin:       2px 10px;
-    background-color: @bg-alt;
-    border:       0;
-    border-radius: 999px;
-    handle-color: @bg-selected;
+  width: 4px;
+  padding: 0;
+  handle-width: 8px;
+  margin: 2px 10px;
+  background-color: @bg-alt;
+  border: 0;
+  border-radius: 999px;
+  handle-color: @bg-selected;
 }
