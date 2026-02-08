@@ -23,11 +23,13 @@
     "tooltip-format": "{capacity}%"
   },
   "network": {
-    "format-wifi": "<span> </span>",
-    "format-ethernet": "<span>󰤭 </span>",
-    "format-linked": "<span></span>",
-    "format-disconnected": "<span></span>",
-    "tooltip-format-wifi": "{essid}\n{ifname}\nSignal Strength: {signalStrength}%\nIP: {ipaddr}"
+    "format-wifi": "<span>{icon} </span>",
+    "format-ethernet": "<span>󰈀 </span>",
+    "format-linked": "<span>󰤫 </span>",
+    "format-disconnected": "<span>󰤮 </span>",
+    "tooltip-format-wifi": "{essid}\n{ifname}\nSignal Strength: {signalStrength}%\nIP: {ipaddr}",
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "on-click": "ghostty --gtk-single-instance=true -e impala"
   },
   "pulseaudio": {
     "format": "{icon}",
