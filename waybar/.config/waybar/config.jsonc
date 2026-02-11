@@ -2,7 +2,7 @@
   "position": "top",
   "modules-left": ["hyprland/workspaces", "mpris"],
   "modules-center": ["hyprland/window"],
-  "modules-right": ["custom/weather", "cpu", "memory", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
+  "modules-right": ["cpu", "memory", "custom/weather", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
   "clock": {
     "format": "<span>  </span>{:%a %d    %I:%M %p}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
