@@ -190,7 +190,7 @@ fi
 # iTerm2 Shell Integration
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-# Add Visual Studio Code (code)
+# Add Visual Studio Code (Mac)
 if [[ -d "/Applications/Visual Studio Code.app/Contents/Resources/app/bin" && ! "$PATH" == */Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin* ]]; then
   export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 fi
@@ -199,3 +199,6 @@ fi
 if [[ -d "$HOME/.local/bin" && ! "$PATH" == *$HOME/.local/bin* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
+
+# Local environment overrides
+[[ -f "$HOME/.local_env" ]] && source "$HOME/.local_env"
