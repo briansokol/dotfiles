@@ -744,7 +744,9 @@ if [[ "$RUN_NPM" = true ]]; then
             # Install updates if any packages need updating
             if [[ ${#PACKAGES_TO_UPDATE[@]} -gt 0 ]]; then
                 print_info "Updating ${#PACKAGES_TO_UPDATE[@]} package(s): ${PACKAGES_TO_UPDATE[*]}"
-                if npm install -g "${PACKAGES_TO_UPDATE[@]}" 2>/dev/null; then
+                NPM_INSTALL_OUTPUT=$(npm install -g "${PACKAGES_TO_UPDATE[@]}" 2>&1)
+                NPM_EXIT_CODE=$?
+                if [[ $NPM_EXIT_CODE -eq 0 ]]; then
                     # Add packages to the tracking array
                     for pkg in "${PACKAGES_TO_UPDATE[@]}"; do
                         NPM_UPDATED_PACKAGES+=("$pkg")
@@ -752,7 +754,13 @@ if [[ "$RUN_NPM" = true ]]; then
                     UPDATED_ITEMS+=("NPM global packages")
                     print_success "NPM global packages updated successfully"
                 else
-                    print_warning "Failed to update npm packages"
+                    if echo "$NPM_INSTALL_OUTPUT" | grep -qi "eacces\|permission denied"; then
+                        print_warning "Failed to update npm packages (permission denied)"
+                        print_info "Run this command manually:"
+                        echo "\n  ${BOLD}nvm use system && sudo npm install -g ${PACKAGES_TO_UPDATE[*]}${RESET}\n"
+                    else
+                        print_warning "Failed to update npm packages"
+                    fi
                     SKIPPED_ITEMS+=("NPM (update failed)")
                 fi
             else
