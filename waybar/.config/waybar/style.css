@@ -5,6 +5,7 @@
     font-size: 16px;
     min-height: 0;
     font-weight: bold;
+    transition: none;
 }
 
 window#waybar {
