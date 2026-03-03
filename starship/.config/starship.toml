@@ -5,8 +5,10 @@ command_timeout = 5000
 format = """
 [](surface0)\
 $os\
-$username\
 [](bg:blue fg:surface0)\
+$hostname\
+$username\
+[](bg:blue fg:lavender)\
 $directory\
 [](bg:mauve fg:blue)\
 $git_branch\
@@ -22,7 +24,9 @@ $java\
 $kotlin\
 $haskell\
 $python\
-[](teal)\
+[](bg:sapphire fg:teal)\
+$package\
+[](sapphire)\
 $fill\
 [](yellow)\
 $cmd_duration\
@@ -65,10 +69,16 @@ Debian = "󰣚"
 Redhat = "󱄛"
 RedHatEnterprise = "󱄛"
 
+[hostname]
+ssh_only = true
+ssh_symbol = " "
+style = "bg:lavender fg:crust"
+format = '[ $ssh_symbol$hostname]($style)'
+
 [username]
 show_always = false
-style_user = "bg:surface0 fg:blue"
-style_root = "bg:surface0 fg:red"
+style_user = "bg:lavender fg:crust"
+style_root = "bg:lavender fg:red"
 format = '[ $user ]($style)'
 
 [directory]
@@ -79,66 +89,72 @@ truncation_symbol = "…/"
 
 [git_branch]
 symbol = ""
-style = "bg:mauve"
+style = "bg:mauve fg:crust"
 format = '[[ $symbol $branch ](fg:crust bg:mauve)]($style)'
 
 [git_status]
-style = "bg:mauve"
+style = "bg:mauve fg:crust"
 format = '[[($all_status$ahead_behind )](fg:crust bg:mauve)]($style)'
 
 [git_state]
-style = "bg:mauve"
+style = "bg:mauve fg:crust"
 format = '[ $state ]($style)'
 
 [nodejs]
 symbol = ""
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [c]
 symbol = " "
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [rust]
 symbol = ""
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [golang]
 symbol = ""
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [php]
 symbol = ""
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [java]
 symbol = " "
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [kotlin]
 symbol = ""
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [haskell]
 symbol = ""
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version) ](fg:crust bg:teal)]($style)'
 
 [python]
 symbol = ""
-style = "bg:teal"
+style = "bg:teal fg:crust"
 format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:crust bg:teal)]($style)'
 
 [docker_context]
 symbol = ""
-style = "bg:sapphire"
+style = "bg:sapphire fg:crust"
 format = '[[ $symbol( $context) ](fg:crust bg:sapphire)]($style)'
+
+[package]
+display_private = true
+symbol = " "
+style = "bg:sapphire fg:crust"
+format = '[ $symbol$version ]($style)'
 
 [time]
 disabled = false
