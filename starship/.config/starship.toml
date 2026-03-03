@@ -5,10 +5,9 @@ command_timeout = 5000
 format = """
 [](surface0)\
 $os\
-[](bg:blue fg:surface0)\
 $hostname\
 $username\
-[](bg:blue fg:lavender)\
+[](bg:blue fg:surface0)\
 $directory\
 [](bg:mauve fg:blue)\
 $git_branch\
@@ -71,15 +70,15 @@ RedHatEnterprise = "󱄛"
 
 [hostname]
 ssh_only = true
-ssh_symbol = " "
-style = "bg:lavender fg:crust"
-format = '[ $ssh_symbol$hostname]($style)'
+ssh_symbol = ""
+style = "bg:surface0 fg:blue"
+format = '[ $ssh_symbol$hostname ]($style)'
 
 [username]
 show_always = false
-style_user = "bg:lavender fg:crust"
-style_root = "bg:lavender fg:red"
-format = '[ $user ]($style)'
+style_user = "bg:surface0 fg:blue"
+style_root = "bg:surface0 fg:red"
+format = '[  $user ]($style)'
 
 [directory]
 style = "bg:blue fg:crust"
