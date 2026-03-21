@@ -6,7 +6,6 @@ format = """
 [](surface0)\
 $os\
 $hostname\
-$username\
 [](bg:blue fg:surface0)\
 $directory\
 [](bg:mauve fg:blue)\
