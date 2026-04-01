@@ -139,6 +139,9 @@ alias nv='nvim'
 alias vim='nvim'
 alias nf='fzf -m --preview="bat --color=always {}" --bind "enter:become(nvim {+})"'
 
+# Claude with params
+alias claude='claude --enable-auto-mode'
+
 # Eza Aliases
 if (( $+commands[eza] )); then
   alias ls='eza --icons=always --group-directories-first --color=always'
