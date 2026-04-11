@@ -110,6 +110,7 @@ DEFAULT_USER=$(whoami)
 
 if (( $+commands[micro] )); then
   export EDITOR=micro
+  MICRO_TRUECOLOR=1
 else
   export EDITOR=nano
 fi
