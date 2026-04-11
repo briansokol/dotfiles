@@ -199,6 +199,11 @@ if [[ -d "/Applications/Visual Studio Code.app/Contents/Resources/app/bin" && ! 
   export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 fi
 
+# opencode
+if [[ -d "$HOME/.opencode/bin" && ! "$PATH" == *$HOME/.opencode/bin* ]]; then
+  export PATH="$HOME/.opencode/bin:$PATH"
+fi
+
 # Local bin
 if [[ -d "$HOME/.local/bin" && ! "$PATH" == *$HOME/.local/bin* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
