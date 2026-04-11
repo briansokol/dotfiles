@@ -14,7 +14,7 @@
 
 font-family = "Monaspace Argon NF"
 font-size = 12
-background-opacity = 0.9
+background-opacity = 1.00
 background-blur = true
 window-padding-x = 10
 window-height = 35
