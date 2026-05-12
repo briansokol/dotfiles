@@ -140,9 +140,6 @@ alias nv='nvim'
 alias vim='nvim'
 alias nf='fzf -m --preview="bat --color=always {}" --bind "enter:become(nvim {+})"'
 
-# Claude with params
-alias claude='claude --enable-auto-mode'
-
 # Eza Aliases
 if (( $+commands[eza] )); then
   alias ls='eza --icons=always --group-directories-first --color=always'
@@ -181,9 +178,12 @@ fi
 if command -v zoxide &>/dev/null && ! typeset -f __zoxide_z >/dev/null; then
   eval "$(zoxide init zsh)"
 
-  # Create a cd wrapper that falls back to builtin cd
+  # Create a cd wrapper that falls back to builtin cd.
+  # Skip zoxide in non-interactive shells (scripts, Claude Code's Bash tool):
+  # they source a snapshot of this function without zoxide's chpwd hook, which
+  # makes zoxide print a spurious "configuration issue" doctor warning.
   cd() {
-    if typeset -f __zoxide_z >/dev/null; then
+    if [[ -o interactive ]] && typeset -f __zoxide_z >/dev/null; then
       __zoxide_z "$@"
     else
       builtin cd "$@"
