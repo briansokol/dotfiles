@@ -1,0 +1,42 @@
+# Global gitignore — applies on top of every repo's .gitignore.
+# Configured via core.excludesFile in ~/.gitconfig.
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.netrwhist
+Session.vim
+.nvimlog
+
+# Build / dependency artifacts that are universally local
+node_modules/
+__pycache__/
+*.py[cod]
+.venv/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Misc
+.env.local
+*.log
+.tmp/
+
+# Claude Code per-project local settings
+**/.claude/settings.local.json

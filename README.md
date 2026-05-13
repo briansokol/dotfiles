@@ -1,155 +1,99 @@
 # dotfiles
 
-All my dotfiles, ready to be installed and synced with Stow.
+Cross-platform dotfiles for **macOS**, **Arch Linux**, and **Ubuntu/Debian**, managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
-## Install Stow
+## Quick start
 
-Mac using Homebrew:
+On a fresh machine:
 
-```zsh
-brew install stow
-```
-
-Debian/Ubuntu using apt:
-
-```zsh
-sudo apt update
-sudo apt install stow
-```
-
-Fedora, RHEL, or CentOS using Yum:
-
-```zsh
-sudo yum install stow
-```
-
-Or using DNF:
-```zsh
-sudo dnf install stow
-```
-
-Arch Linux (and maybe Git Bash) using Pacman:
-```zsh
-sudo pacman -S stow
-```
-
-## Install Starship
-
-Needed for zsh.
-
-Follow the [installation guide](https://starship.rs/guide/) to install Starship to make the terminal look awesome.
-
-## Install Required Tools
-
-### fzf
-
-Follow the instructions on the [GitHub page](https://github.com/junegunn/fzf) to install fzf, a tool for fuzzy filename matching.
-
-### Zoxide
-
-Follow the instructions on the [GitHub page](https://github.com/ajeetdsouza/zoxide) to install Zoxide, a tool to enable shortcuts when changing directories.
-
-## Install Optional Tools
-
-### Eza
-
-Follow the instructions on the [GitHub page](https://github.com/eza-community/eza/blob/main/INSTALL.md) to install Eza, a tool to replace the ls command.
-
-### Micro
-
-Follow the instructions on the [GitHub page](https://github.com/zyedidia/micro#package-managers) to install Micro, a modern simple text editor.
-
-### Ripgrep
-
-Needed for Neovim.
-
-```zsh
-brew install ripgrep
-```
-
-```zsh
-sudo pacman -S ripgrep
-```
-
-### Fd
-
-Needed for Neovim.
-
-```zsh
-brew install fd
-```
-
-```zsh
-sudo pacman -S fd
-```
-
-### LazyGit
-
-Needed for Neovim.
-
-```zsh
-brew install lazygit
-```
-
-```zsh
-sudo pacman -S lazygit
-```
-
-### Treesitter CLI
-
-Needed for Neovim.
-
-```zsh
-npm install tree-sitter-cli
-```
-
-## Install Tmux
-
-Follow the instructions on the [GitHub wiki page](https://github.com/tmux/tmux/wiki/Installing) to install Tmux.
-
-### Install Tmux Plugin Manager
-
-```zsh
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-```
-
-## Install Dotfiles
-
-If this repo is cloned into your home directory, `cd` into the dotfiles repo and run the `stow` command for each package you want to install.
-```zsh
+```sh
+git clone https://github.com/<you>/dotfiles ~/dotfiles
 cd ~/dotfiles
-stow zsh
-stow iterm
-stow tmux
-stow nvm
+./bootstrap.sh
 ```
 
-In order to prevent symlinks from being made to entire folders, you can run (for example):
-```zsh
-stow --no-folding tmux
+`bootstrap.sh` is idempotent — re-run it any time. It will:
+
+1. Detect the OS (override with `--macos` / `--arch` / `--ubuntu`).
+2. Install the matching package manifest:
+   - macOS → [`Brewfile`](Brewfile) via `brew bundle`
+   - Arch → [`packages/arch.txt`](packages/arch.txt) + [`packages/aur.txt`](packages/aur.txt)
+   - Ubuntu → [`packages/ubuntu.txt`](packages/ubuntu.txt) (with fallbacks for tools that aren't in apt — see comments at the top of that file)
+3. Clone plugin managers: [zinit](https://github.com/zdharma-continuum/zinit) for Zsh, [TPM](https://github.com/tmux-plugins/tpm) for tmux.
+4. Stow the right package set with `--restow --no-folding`.
+5. Build the `bat` theme cache, import existing Zsh history into `atuin`, and `chmod +x` the helper scripts.
+
+Useful flags:
+
+```sh
+./bootstrap.sh --no-packages    # stow + plugin bootstrap only (no sudo/brew)
+./bootstrap.sh --packages-only  # install packages, skip stow
+./bootstrap.sh -h               # all flags
 ```
 
-Otherwise, `cd` into the dotfiles folder and run:
-```zsh
-stow <package> --target=$HOME
-```
+LazyVim self-installs on first `nvim` launch.
 
-## Syncing Changed Dotfiles
+## Manual / partial install
 
-1. Commit any changes to dotfiles to the main branch of this repo.
-2. On other computers, pull changes.
+If you'd rather skip the bootstrap and only install some packages:
 
-## Revert dotfiles to Originals
-
-If you need to uninstall this repo, go to the dotfiles repo and run the delete command:
-
-```zsh
+```sh
 cd ~/dotfiles
+stow --no-folding zsh tmux nvim git atuin   # whichever you want
+```
+
+To uninstall a package's symlinks:
+
+```sh
 stow --delete <package>
 ```
 
-## Adding New Dotfiles
+## Packages
 
-1. Commit new files to the main branch.
-2. On other computers, pull changes.
-3. Run the stow install commands above.
+Cross-platform (always stowed): `zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop`
+
+macOS only: `iterm aerospace sketchybar`
+
+Linux/Wayland only: `hyprland waybar wofi swaync swayosd`
+
+(`p10k` is in the repo for reference but unused — Starship is the active prompt.)
+
+## Keeping things up to date
+
+```sh
+update-all                  # update everything (zinit, brew/apt/pacman/yay, npm globals)
+update-all --sync-packages  # also install anything new from the manifests
+update-all -h               # show all flags
+```
+
+`update-all` self-checks for new commits in `~/dotfiles` first — if found, it pulls them and exits so you can restart your shell.
+
+## Per-machine overrides
+
+- `~/.local_env` — shell secrets/env vars (sourced from `.zshrc`; not in the repo).
+- `~/.gitconfig.local` or `~/.gitconfig-work` — git identity overrides (see comments in [`git/.gitconfig`](git/.gitconfig)).
+- `atuin` sync — run `atuin register` / `atuin login` per machine; the encryption key isn't checked in.
+
+## Theme
+
+Catppuccin Mocha across the board (with Macchiato for Starship): tmux, bat, delta, fzf, atuin, lazygit, btop, waybar, swaync, swayosd, rofi, yazi, micro, ghostty.
+
+## Layout
+
+```
+dotfiles/
+├── bootstrap.sh           # one-shot installer
+├── Brewfile               # macOS package manifest
+├── packages/              # Linux package manifests
+│   ├── arch.txt
+│   ├── aur.txt
+│   └── ubuntu.txt
+├── zsh/                   # one directory per stow package
+│   ├── .zshrc             # → ~/.zshrc
+│   └── .scripts/
+│       ├── update-all-dependencies.sh
+│       ├── merge-main.sh
+│       └── rebase-main.sh
+├── nvim/.config/nvim/...  # → ~/.config/nvim/...
+└── ...
+```

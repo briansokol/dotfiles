@@ -1,0 +1,34 @@
+# atuin config — magical shell history.
+# Sync (`atuin login`/`atuin register`) is per-machine and intentionally not
+# configured here. Run `atuin import auto` once to ingest existing zsh history.
+
+## search
+search_mode = "fuzzy"
+filter_mode = "global"
+filter_mode_shell_up_key_binding = "session"
+style = "compact"
+inline_height = 25
+
+## behavior
+enter_accept = true
+update_check = false
+show_preview = true
+exit_mode = "return-original"
+
+[theme]
+name = "catppuccin-mocha-mauve"
+
+[stats]
+common_subcommands = [
+  "cargo",
+  "go",
+  "git",
+  "npm",
+  "yarn",
+  "pnpm",
+  "kubectl",
+  "docker",
+  "podman",
+  "stow",
+]
+ignored_commands = ["cd", "ls", "la", "..", "...", "clear", "exit"]

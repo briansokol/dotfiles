@@ -55,6 +55,47 @@ print_skip() {
     echo "${YELLOW}⊘${RESET}  $1"
 }
 
+# Helper function: install packages declared in the dotfiles manifests
+# (Brewfile / packages/<distro>.txt) that aren't yet installed. Idempotent
+# no-op when everything's present. Gated behind -s/--sync-packages because
+# pacman/apt prompt for sudo and we don't want that every `update-all` run.
+install_missing_packages() {
+    local repo_dir="$HOME/dotfiles"
+    case "$(uname -s)" in
+        Darwin)
+            if [[ -f "$repo_dir/Brewfile" ]] && command_exists brew; then
+                print_section "📦 Sync packages (Brewfile)"
+                brew bundle install --file="$repo_dir/Brewfile"
+                print_success "Brewfile in sync"
+            fi
+            ;;
+        Linux)
+            local manifest pkgs
+            if command_exists pacman && [[ -f "$repo_dir/packages/arch.txt" ]]; then
+                print_section "📦 Sync packages (pacman)"
+                manifest="$repo_dir/packages/arch.txt"
+                pkgs=("${(@f)$(grep -vE '^\s*(#|$)' "$manifest")}")
+                sudo pacman -S --needed --noconfirm "${pkgs[@]}"
+                print_success "pacman manifest in sync"
+            fi
+            if command_exists yay && [[ -f "$repo_dir/packages/aur.txt" ]]; then
+                print_section "📦 Sync packages (yay/AUR)"
+                manifest="$repo_dir/packages/aur.txt"
+                pkgs=("${(@f)$(grep -vE '^\s*(#|$)' "$manifest")}")
+                yay -S --needed --noconfirm "${pkgs[@]}"
+                print_success "yay manifest in sync"
+            fi
+            if command_exists apt-get && [[ -f "$repo_dir/packages/ubuntu.txt" ]] && ! command_exists pacman; then
+                print_section "📦 Sync packages (apt)"
+                manifest="$repo_dir/packages/ubuntu.txt"
+                pkgs=("${(@f)$(grep -vE '^\s*(#|$)' "$manifest")}")
+                sudo apt-get install -y "${pkgs[@]}"
+                print_success "apt manifest in sync"
+            fi
+            ;;
+    esac
+}
+
 # Helper function to reload zshrc
 reload_zshrc() {
     if [[ -f "$HOME/.zshrc" ]]; then
@@ -94,7 +135,8 @@ trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
 # Parse command-line flags for selective package manager updates
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Default: run all package managers
+# Default: run all package managers, but NOT the package-manifest sync
+# (it prompts for sudo every run — opt in with -s/--sync-packages).
 RUN_APT=true
 RUN_PACMAN=true
 RUN_YAY=true
@@ -102,6 +144,7 @@ RUN_NPM=true
 RUN_HOMEBREW=true
 RUN_ZINIT=true
 RUN_GIT_CHECK=true
+RUN_SYNC_PACKAGES=false
 
 # Pre-process long flags before getopts
 ARGS=()
@@ -109,6 +152,10 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --no-git-check)
             RUN_GIT_CHECK=false
+            shift
+            ;;
+        --sync-packages)
+            RUN_SYNC_PACKAGES=true
             shift
             ;;
         -*)
@@ -136,7 +183,7 @@ if [[ $# -gt 0 ]]; then
     RUN_HOMEBREW=false
     RUN_ZINIT=false
 
-    while getopts "apynhz" opt; do
+    while getopts "apynhzs" opt; do
         case $opt in
             a) RUN_APT=true ;;
             p) RUN_PACMAN=true ;;
@@ -144,6 +191,7 @@ if [[ $# -gt 0 ]]; then
             n) RUN_NPM=true ;;
             h) RUN_HOMEBREW=true ;;
             z) RUN_ZINIT=true ;;
+            s) RUN_SYNC_PACKAGES=true ;;
             \?) ;; # Ignore invalid options
         esac
     done
@@ -774,6 +822,15 @@ else
     print_section "NPM Global Packages"
     print_skip "NPM skipped (not requested by user)"
     SKIPPED_ITEMS+=("NPM")
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Sync packages from dotfiles manifests (opt-in via -s/--sync-packages)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if [[ "$RUN_SYNC_PACKAGES" = true ]]; then
+    install_missing_packages
+    UPDATED_ITEMS+=("Package manifests")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

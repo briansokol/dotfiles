@@ -1,0 +1,52 @@
+# Arch official repo packages (pacman -S --needed).
+# Apply with: sudo pacman -S --needed - < packages/arch.txt (also run by bootstrap.sh and update-all -s)
+# Lines starting with `#` and blank lines are ignored.
+
+# Core CLI
+base-devel
+git
+stow
+zsh
+tmux
+neovim
+micro
+starship
+fzf
+zoxide
+eza
+bat
+ripgrep
+fd
+lazygit
+jq
+btop
+atuin
+yazi
+git-delta
+tree-sitter-cli
+
+# Runtimes (NVM still manages Node versions; this is just the package manager fallback)
+nodejs
+npm
+
+# Terminal
+ghostty
+
+# Wayland / Hyprland desktop
+hyprland
+hypridle
+hyprlock
+hyprpaper
+waybar
+wofi
+rofi-wayland
+swaync
+pavucontrol
+brightnessctl
+playerctl
+impala
+dolphin
+
+# Fonts
+ttf-monaspace
+ttf-sourcecodepro-nerd

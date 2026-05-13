@@ -16,6 +16,17 @@ This is a Stow-based dotfiles management repository for cross-platform developme
 
 ## Common Commands
 
+### Bootstrap (first-time install)
+```bash
+./bootstrap.sh                  # Detect OS, install package manifest, clone zinit/TPM, stow everything
+./bootstrap.sh --no-packages    # Skip package install (stow + plugin bootstrap only)
+./bootstrap.sh --packages-only  # Install packages, skip stow
+./bootstrap.sh --macos|--arch|--ubuntu  # Override platform detection
+```
+
+The bootstrap script is idempotent (uses `stow --restow --no-folding`) and safe to re-run.
+Package sets are arrays at the top of `bootstrap.sh` — `COMMON`, `MACOS_ONLY`, `LINUX_ONLY`.
+
 ### Stow Management
 ```bash
 stow <package>                  # Install package by creating symlinks
@@ -33,8 +44,14 @@ update-all -n                   # Update only npm global packages
 update-all -p                   # Update only Pacman (Arch Linux)
 update-all -y                   # Update only Yay AUR packages
 update-all -z                   # Update only Zinit plugins
+update-all -s                   # Install missing packages from Brewfile / packages/<distro>.txt
+update-all --sync-packages      # Same as -s (opt-in: prompts for sudo on Linux)
 update-all --no-git-check       # Skip dotfiles repository update check
 ```
+
+**Note:** `-s`/`--sync-packages` is intentionally opt-in (not part of the default `update-all` run)
+because `sudo pacman -S --needed` / `sudo apt install` prompt for sudo every time.
+Run it explicitly when you've added entries to a manifest.
 
 **Important**: The script automatically checks for dotfiles updates before running package updates. If updates are found, it pulls them and exits (requiring shell restart).
 
@@ -193,11 +210,17 @@ The `.zshrc` includes a `chpwd` hook that automatically runs `nvm use` when:
 
 ## Required Tools
 
+`bootstrap.sh` installs these from the package manifests. Listed here for reference / manual installs:
+
 **Core Dependencies**:
 - GNU Stow - Symlink management
 - Starship - Shell prompt
 - fzf - Fuzzy finder
 - Zoxide - Directory jumping
+- atuin - Magical shell history (Ctrl-R; replaces fzf's default Ctrl-R widget)
+- git-delta - Pager for `git diff`/`git log` (wired in `git/.gitconfig`)
+- bat - Syntax-highlighted `cat`; theme cache built by bootstrap.sh
+- btop - System monitor
 
 **Optional but Recommended**:
 - eza - Modern ls replacement
@@ -205,3 +228,42 @@ The `.zshrc` includes a `chpwd` hook that automatically runs `nvm use` when:
 - tree-sitter-cli - For Neovim syntax highlighting
 - jq - For npm update script
 - micro - Modern terminal text editor
+
+## Package Manifests
+
+Declarative lists of what should be installed per platform — kept in sync by `bootstrap.sh`
+and (optionally) `update-all -s`:
+
+| File | Platform | Tool |
+|------|----------|------|
+| `Brewfile` | macOS | `brew bundle install --file=Brewfile` |
+| `packages/arch.txt` | Arch | `pacman -S --needed` |
+| `packages/aur.txt` | Arch | `yay -S --needed` |
+| `packages/ubuntu.txt` | Ubuntu/Debian | `apt-get install -y` |
+
+Ubuntu's apt is intentionally sparse — `bootstrap.sh` installs `starship`/`atuin` via their
+official install scripts and warns about `lazygit`/`git-delta`/`btop`/`eza` (which often
+aren't packaged on recent Ubuntu LTS). The script also symlinks `~/.local/bin/bat` → `batcat`
+and `~/.local/bin/fd` → `fdfind` so configs that reference the upstream binary names work.
+
+## btop config (theme-only stow)
+
+The `btop/` stow package ships **only** the Catppuccin Mocha theme file, not
+`btop.conf`. Reason: btop rewrites its own config on exit, which would dirty
+the dotfiles repo every time you run btop. Set the theme once by editing the
+real `~/.config/btop/btop.conf` (or via btop's options menu → `O`):
+
+```
+color_theme = "catppuccin_mocha"
+```
+
+## Shell History (atuin)
+
+Atuin replaces the default Ctrl-R history search. The `.zshrc` initialization uses
+`--disable-up-arrow` so the Up key continues to do normal Zsh history search.
+The init block must run **after** the `fzf --zsh` source so atuin's Ctrl-R binding wins.
+
+Per-machine sync (E2E-encrypted) is opt-in: run `atuin register` or `atuin login` on each
+machine. The encryption key is not checked into this repo.
+
+`bootstrap.sh` runs `atuin import auto` once per machine to ingest existing `~/.zsh_history`.

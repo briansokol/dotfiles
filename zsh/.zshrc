@@ -169,9 +169,23 @@ if [[ ! "$PATH" == *$HOME/.fzf/bin* ]]; then
   PATH="${PATH:+${PATH}:}$HOME/.fzf/bin"
 fi
 
+# fzf colors (Catppuccin Mocha) — also applies to fzf-tab completion menus
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+--color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+--color=selected-bg:#45475a \
+--multi"
+
 # Only initialize fzf once (check if fzf widgets are already loaded)
 if command -v fzf &>/dev/null && ! bindkey | grep -q "fzf-file-widget"; then
   source <(fzf --zsh)
+fi
+
+# Atuin shell history — Ctrl-R replaces fzf's history widget (intended).
+# Up-arrow stays as zsh's normal history search (--disable-up-arrow).
+if command -v atuin &>/dev/null && ! typeset -f _atuin_search_widget >/dev/null; then
+  eval "$(atuin init zsh --disable-up-arrow)"
 fi
 
 # Initialize zoxide with a fallback wrapper (check if __zoxide_z function exists)

@@ -1,0 +1,92 @@
+[user]
+	name = Brian Sokol
+	email = bri@nsokol.net
+
+# Per-machine identity overrides: drop a ~/.gitconfig.local or
+# ~/.gitconfig-work next to this file and include it conditionally, e.g.
+# [includeIf "gitdir:~/work/"]
+#     path = ~/.gitconfig-work
+
+# Use the GitHub CLI as the git credential helper. The empty first line
+# clears any pre-existing helper (e.g. osxkeychain) before gh takes over.
+# Portable form: !gh resolves via PATH so this works on macOS and Linux.
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+	default = current
+
+[fetch]
+	prune = true
+	pruneTags = true
+
+[rebase]
+	autoStash = true
+	autoSquash = true
+	updateRefs = true
+
+[merge]
+	conflictStyle = zdiff3
+
+[diff]
+	colorMoved = default
+	algorithm = histogram
+	renames = copies
+
+[rerere]
+	enabled = true
+
+[column]
+	ui = auto
+
+[branch]
+	sort = -committerdate
+
+[tag]
+	sort = version:refname
+
+[help]
+	autocorrect = prompt
+
+[core]
+	pager = delta
+	excludesFile = ~/.config/git/ignore
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	features = catppuccin-mocha
+	navigate = true
+	line-numbers = true
+	side-by-side = false
+	hyperlinks = true
+
+[include]
+	path = ~/.config/delta/catppuccin.gitconfig
+
+[alias]
+	st = status
+	co = checkout
+	br = branch
+	cm = commit
+	last = log -1 HEAD --stat
+	lg = log --oneline --graph --decorate --all
+	unstage = reset HEAD --
+	amend = commit --amend --no-edit
+	wip = !git add -A && git commit -m 'wip'
+	root = rev-parse --show-toplevel
+
+[color]
+	ui = auto

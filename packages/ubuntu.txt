@@ -1,0 +1,38 @@
+# Ubuntu/Debian apt packages.
+# Apply with: sudo apt install -y $(grep -vE '^\s*#|^\s*$' packages/ubuntu.txt)
+# (Also run by bootstrap.sh and update-all -s.)
+#
+# Caveats:
+#   * `bat` ships the binary as `batcat` on Ubuntu — bootstrap.sh symlinks
+#     ~/.local/bin/bat -> /usr/bin/batcat so configs that call `bat` work.
+#   * `fd-find` ships the binary as `fdfind`; same treatment for fd.
+#   * Ubuntu apt typically lacks recent versions (or any version) of
+#     starship, eza, lazygit, git-delta, atuin, btop, ghostty. bootstrap.sh
+#     installs those from their official release/install scripts.
+
+# Core CLI
+build-essential
+git
+stow
+zsh
+tmux
+neovim
+micro
+fzf
+jq
+ripgrep
+fd-find
+bat
+zoxide
+
+# Runtimes (NVM still manages Node versions)
+nodejs
+npm
+
+# Wayland desktop (if running Ubuntu with Wayland; Hyprland not in Ubuntu repos)
+waybar
+wofi
+swaync
+pavucontrol
+brightnessctl
+playerctl

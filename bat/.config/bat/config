@@ -1,0 +1,7 @@
+# bat configuration
+# Run `bat cache --build` after editing themes/ to pick up new .tmTheme files.
+
+--theme="Catppuccin Mocha"
+--style="numbers,changes,header"
+--italic-text=always
+--paging=auto
