@@ -27,5 +27,18 @@
       }
     }
   },
+  "mcp": {
+    "serena": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide",
+        "--project-from-cwd"
+      ]
+    }
+  },
   "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]
 }
