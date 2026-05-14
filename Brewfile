@@ -32,7 +32,6 @@ brew "node"
 
 # GUI / terminals
 cask "ghostty"
-cask "iterm2"
 
 # macOS window/menu management
 cask "nikitabobko/tap/aerospace"

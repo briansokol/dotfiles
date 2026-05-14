@@ -23,7 +23,7 @@ cd "$REPO_DIR"
 
 # Stow package sets. p10k is intentionally excluded (disabled in .zshrc).
 COMMON=(zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop)
-MACOS_ONLY=(iterm aerospace sketchybar)
+MACOS_ONLY=(aerospace sketchybar)
 LINUX_ONLY=(hyprland waybar wofi swaync swayosd)
 
 # Colors
