@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 input=$(cat)
 
+dir=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty' 2>/dev/null)
+dir_name=""
+[ -n "$dir" ] && dir_name=$(basename "$dir")
+
+raw_model=$(echo "$input" | jq -r '.model.display_name // .model // empty' 2>/dev/null)
+
+# rate_limits is absent on API billing — `// empty` causes those segments to be skipped.
 five_h=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty' 2>/dev/null)
 seven_d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty' 2>/dev/null)
 ctx=$(echo "$input" | jq -r '.context_window.used_percentage // empty' 2>/dev/null)
-raw_model=$(echo "$input" | jq -r '.model.display_name // .model // empty' 2>/dev/null)
 
 segment() {
   local label="$1" val="$2"
@@ -30,10 +36,11 @@ if [ -f "$caveman_flag" ]; then
   fi
 fi
 
+append "$dir_name"
 append "$raw_model"
 append "$(segment "5h" "$five_h")"
 append "$(segment "7d" "$seven_d")"
 append "$(segment "Ctx" "$ctx")"
-append "$(segment "$caveman_text")"
+append "$caveman_text"
 
 echo "$out"
