@@ -1,0 +1,5 @@
+require("mocha")
+require("settings")
+require("autostart")
+require("binds")
+require("rules")
