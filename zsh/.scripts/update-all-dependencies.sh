@@ -143,6 +143,7 @@ RUN_YAY=true
 RUN_NPM=true
 RUN_HOMEBREW=true
 RUN_ZINIT=true
+RUN_UV=true
 RUN_GIT_CHECK=true
 RUN_SYNC_PACKAGES=false
 
@@ -182,8 +183,9 @@ if [[ $# -gt 0 ]]; then
     RUN_NPM=false
     RUN_HOMEBREW=false
     RUN_ZINIT=false
+    RUN_UV=false
 
-    while getopts "apynhzs" opt; do
+    while getopts "apynhzsu" opt; do
         case $opt in
             a) RUN_APT=true ;;
             p) RUN_PACMAN=true ;;
@@ -192,6 +194,7 @@ if [[ $# -gt 0 ]]; then
             h) RUN_HOMEBREW=true ;;
             z) RUN_ZINIT=true ;;
             s) RUN_SYNC_PACKAGES=true ;;
+            u) RUN_UV=true ;;
             \?) ;; # Ignore invalid options
         esac
     done
@@ -822,6 +825,39 @@ else
     print_section "NPM Global Packages"
     print_skip "NPM skipped (not requested by user)"
     SKIPPED_ITEMS+=("NPM")
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Update uv Global Tools
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if [[ "$RUN_UV" = true ]]; then
+    if command_exists uv; then
+        print_section "Updating uv Global Tools"
+
+        print_info "Updating uv..."
+        if uv self update; then
+            print_info "Upgrading all globally installed uv tools..."
+            if uv tool upgrade --all; then
+                UPDATED_ITEMS+=("uv tools")
+                print_success "uv tools updated successfully"
+            else
+                print_warning "Failed to upgrade uv global tools"
+                SKIPPED_ITEMS+=("uv (update failed)")
+            fi
+        else
+            print_warning "Failed to update uv"
+            SKIPPED_ITEMS+=("uv (update failed)")
+        fi
+    else
+        print_section "uv Global Tools"
+        print_skip "uv not found, skipping"
+        SKIPPED_ITEMS+=("uv")
+    fi
+else
+    print_section "uv Global Tools"
+    print_skip "uv skipped (not requested by user)"
+    SKIPPED_ITEMS+=("uv")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
