@@ -489,15 +489,19 @@ if [[ "$RUN_APT" = true ]]; then
 
         # Determine if we need sudo prefix
         # If already running as root (EUID=0), no sudo needed
-        # Otherwise, check if we have sudo privileges
+        # Otherwise, prompt for sudo password up front (refreshes the timestamp).
         if [[ $EUID -eq 0 ]]; then
             # Running as root, no sudo needed
             SUDO_CMD=""
             HAS_PERMISSION=true
-        elif sudo -n true 2>/dev/null; then
-            # Not root, but sudo is available
-            SUDO_CMD="sudo"
-            HAS_PERMISSION=true
+        elif command_exists sudo; then
+            print_info "APT requires sudo. You may be prompted for your password."
+            if sudo -v; then
+                SUDO_CMD="sudo"
+                HAS_PERMISSION=true
+            else
+                HAS_PERMISSION=false
+            fi
         else
             HAS_PERMISSION=false
         fi
@@ -521,8 +525,7 @@ if [[ "$RUN_APT" = true ]]; then
             UPDATED_ITEMS+=("APT packages")
             print_success "APT updated successfully"
         else
-            print_warning "sudo access required for apt-get. Skipping APT updates."
-            print_info "Run with sudo or configure passwordless sudo for apt-get"
+            print_warning "sudo authentication failed or unavailable. Skipping APT updates."
             SKIPPED_ITEMS+=("APT (no sudo access)")
         fi
     else
@@ -551,15 +554,19 @@ if [[ "$RUN_PACMAN" = true ]]; then
 
         # Determine if we need sudo prefix
         # If already running as root (EUID=0), no sudo needed
-        # Otherwise, check if we have sudo privileges
+        # Otherwise, prompt for sudo password up front (refreshes the timestamp).
         if [[ $EUID -eq 0 ]]; then
             # Running as root, no sudo needed
             SUDO_CMD=""
             HAS_PERMISSION=true
-        elif sudo -n true 2>/dev/null; then
-            # Not root, but sudo is available
-            SUDO_CMD="sudo"
-            HAS_PERMISSION=true
+        elif command_exists sudo; then
+            print_info "Pacman requires sudo. You may be prompted for your password."
+            if sudo -v; then
+                SUDO_CMD="sudo"
+                HAS_PERMISSION=true
+            else
+                HAS_PERMISSION=false
+            fi
         else
             HAS_PERMISSION=false
         fi
@@ -595,8 +602,7 @@ if [[ "$RUN_PACMAN" = true ]]; then
             UPDATED_ITEMS+=("Pacman packages")
             print_success "Pacman updated successfully"
         else
-            print_warning "sudo access required for pacman. Skipping Pacman updates."
-            print_info "Run with sudo or configure passwordless sudo for pacman"
+            print_warning "sudo authentication failed or unavailable. Skipping Pacman updates."
             SKIPPED_ITEMS+=("Pacman (no sudo access)")
         fi
     else

@@ -223,5 +223,15 @@ if [[ -d "$HOME/.local/bin" && ! "$PATH" == *$HOME/.local/bin* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
+# .NET SDK installed via dotnet-install.sh (includes TestHostNetFramework,
+# unlike the Ubuntu-packaged dotnet8 SDK). Take precedence over /usr/bin/dotnet.
+if [[ -d "$HOME/.dotnet" && ! "$PATH" == *$HOME/.dotnet:* ]]; then
+  export DOTNET_ROOT="$HOME/.dotnet"
+  export PATH="$HOME/.dotnet:$PATH"
+fi
+
 # Local environment overrides
 [[ -f "$HOME/.local_env" ]] && source "$HOME/.local_env"
+
+# opencode
+export PATH=/home/bsokol/.opencode/bin:$PATH
