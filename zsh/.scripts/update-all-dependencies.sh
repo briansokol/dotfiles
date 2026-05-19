@@ -836,18 +836,18 @@ if [[ "$RUN_UV" = true ]]; then
         print_section "Updating uv Global Tools"
 
         print_info "Updating uv..."
-        if uv self update; then
-            print_info "Upgrading all globally installed uv tools..."
-            if uv tool upgrade --all; then
-                UPDATED_ITEMS+=("uv tools")
-                print_success "uv tools updated successfully"
-            else
-                print_warning "Failed to upgrade uv global tools"
-                SKIPPED_ITEMS+=("uv (update failed)")
-            fi
+        if ! uv self update; then
+            print_warning "Failed to update uv itself, continuing with tool upgrades"
+            SKIPPED_ITEMS+=("uv self-update (failed)")
+        fi
+
+        print_info "Upgrading all globally installed uv tools..."
+        if uv tool upgrade --all; then
+            UPDATED_ITEMS+=("uv tools")
+            print_success "uv tools updated successfully"
         else
-            print_warning "Failed to update uv"
-            SKIPPED_ITEMS+=("uv (update failed)")
+            print_warning "Failed to upgrade uv global tools"
+            SKIPPED_ITEMS+=("uv tools (update failed)")
         fi
     else
         print_section "uv Global Tools"
