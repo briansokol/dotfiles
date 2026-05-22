@@ -11,6 +11,9 @@ raw_model=$(echo "$input" | jq -r '.model.display_name // .model // empty' 2>/de
 five_h=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty' 2>/dev/null)
 seven_d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty' 2>/dev/null)
 ctx=$(echo "$input" | jq -r '.context_window.used_percentage // empty' 2>/dev/null)
+cost=$(echo "$input" | jq -r '.cost.total_cost_usd // empty' 2>/dev/null)
+cost_text=""
+[ -n "$cost" ] && cost_text=$(printf '$%.4f' "$cost")
 
 segment() {
   local label="$1" val="$2"
@@ -41,6 +44,7 @@ append "$raw_model"
 append "$(segment "5h" "$five_h")"
 append "$(segment "7d" "$seven_d")"
 append "$(segment "Ctx" "$ctx")"
+append "$cost_text"
 append "$caveman_text"
 
 echo "$out"
