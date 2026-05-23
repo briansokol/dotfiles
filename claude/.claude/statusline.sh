@@ -29,10 +29,10 @@ SEP=$''         # right rounded cap
 CAP_L=$''       # left rounded cap
 CAP_R=$''       # right rounded cap
 ICON_DIR=$''    # folder
-ICON_MODEL=$''  # chip
+ICON_MODEL=$'󰍛'    # chip
 ICON_5H=$''     # clock
 ICON_7D=$''     # calendar
-ICON_CTX=$''    # gauge
+ICON_CTX=$'󰆅'    # context window
 ICON_COST=$''   # dollar
 
 # Extract all fields in one jq pass (unit separator handles empties)
@@ -67,9 +67,9 @@ LAST_FG=""
 append_segment() {
   local bg="$1" fg="$2" content="$3"
   if [ -z "$LAST_FG" ]; then
-    LINE="${RESET}${fg}${CAP_L}${bg}${FG_BASE}${BOLD} ${content} "
+    LINE="${RESET}${fg}${CAP_L}${bg}${FG_BASE}${BOLD}${content}"
   else
-    LINE="${LINE}${LAST_FG}${bg}${SEP}${FG_BASE}${BOLD} ${content} "
+    LINE="${LINE}${LAST_FG}${bg}${SEP}${FG_BASE}${BOLD} ${content}"
   fi
   LAST_FG="$fg"
 }
@@ -78,19 +78,19 @@ append_segment() {
 [ -n "$MODEL"    ] && append_segment "$BG_MAUVE" "$FG_MAUVE" "${ICON_MODEL} ${MODEL}"
 
 add_pct() {
-  local icon="$1" label="$2" pct="$3"
+  local icon="$1" pct="$2"
   [ -z "$pct" ] && return
   local n; n=$(printf '%.0f' "$pct" 2>/dev/null) || n=0
   IFS='|' read -r bg fg <<<"$(pct_color "$pct")"
-  append_segment "$bg" "$fg" "${icon} ${label} ${n}%"
+  append_segment "$bg" "$fg" "${icon} ${n}%"
 }
 
-add_pct "$ICON_CTX" "Ctx" "$CTX"
-add_pct "$ICON_5H"  "5h"  "$FIVE_H"
-add_pct "$ICON_7D"  "7d"  "$SEVEN_D"
+add_pct "$ICON_CTX" "$CTX"
+add_pct "$ICON_5H"  "$FIVE_H"
+add_pct "$ICON_7D"  "$SEVEN_D"
 
 if [ -n "$COST" ] && awk -v c="$COST" 'BEGIN { exit !(c+0 > 0) }'; then
-  COST_FMT=$(awk -v c="$COST" 'BEGIN { printf "$%.4f", c+0 }')
+  COST_FMT=$(awk -v c="$COST" 'BEGIN { printf "%.4f", c+0 }')
   append_segment "$BG_TEAL" "$FG_TEAL" "${ICON_COST} ${COST_FMT}"
 fi
 
