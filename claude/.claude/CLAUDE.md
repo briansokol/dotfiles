@@ -55,3 +55,10 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## 5. Writing Style
+
+**Use standard punctuation. No em dashes.**
+
+- Never use the em dash (—) in any written output, including responses, commit messages, comments, and documentation.
+- Use a comma, colon, semicolon, or parentheses instead, whichever best fits the sentence.
