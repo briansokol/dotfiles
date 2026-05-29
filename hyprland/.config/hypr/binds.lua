@@ -8,7 +8,7 @@ local super_shift = "SUPER + SHIFT"
 hl.bind(main_mod .. " + RETURN", hl.dsp.exec_cmd(terminal))
 hl.bind(main_mod .. " + A", hl.dsp.exec_cmd(terminal))
 hl.bind(main_mod .. " + Q", hl.dsp.window.kill())
-hl.bind(main_mod .. " + W", hl.dsp.window.kill())
+hl.bind(main_mod .. " + W", hl.dsp.window.close())
 hl.bind(main_mod .. " + C", hl.dsp.window.kill())
 hl.bind(main_mod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(main_mod .. " + M", hl.dsp.exec_cmd("hyprshutdown"))
