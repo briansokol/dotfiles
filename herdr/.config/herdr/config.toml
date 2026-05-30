@@ -156,6 +156,7 @@ prefix = "alt+z"
 # accent = "cyan"
 
 # Background notification popup delivery
+agent_panel_scope = "all"
 [ui.toast]
 # off = disable pop-up notifications
 # herdr = show top-right in-app toasts
