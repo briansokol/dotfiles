@@ -212,7 +212,7 @@ if (( $+commands[keychain] )); then
     [[ -f "$_kc_key" ]] && _kc_keys+=("${_kc_key:t}")
   done
   if (( ${#_kc_keys[@]} > 0 )); then
-    eval "$(keychain --eval --agents ssh --quiet "${_kc_keys[@]}")"
+    eval "$(keychain --eval --quiet "${_kc_keys[@]}")"
   fi
   unset _kc_keys _kc_key
 fi
