@@ -205,6 +205,18 @@ if command -v zoxide &>/dev/null && ! typeset -f __zoxide_z >/dev/null; then
   }
 fi
 
+# Keychain SSH agent management
+if (( $+commands[keychain] )); then
+  _kc_keys=()
+  for _kc_key in id_ed25519 id_rsa id_ecdsa; do
+    [[ -f "$HOME/.ssh/$_kc_key" ]] && _kc_keys+=("$_kc_key")
+  done
+  if (( ${#_kc_keys[@]} > 0 )); then
+    eval "$(keychain --eval --agents ssh --quiet "${_kc_keys[@]}")"
+  fi
+  unset _kc_keys _kc_key
+fi
+
 # iTerm2 Shell Integration
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
