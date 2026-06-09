@@ -241,3 +241,8 @@ if [ -f "$HOME/Projects/google-cloud-sdk/path.zsh.inc" ]; then . "$HOME/Projects
 
 # The next line enables shell command completion for gcloud.
 if [ -f "$HOME/Projects/google-cloud-sdk/completion.zsh.inc" ]; then . "$HOME/Projects/google-cloud-sdk/completion.zsh.inc"; fi
+
+# System info on new session
+if (( $+commands[fastfetch] )) && [[ $SHLVL -eq 1 ]]; then
+  fastfetch --config neofetch
+fi
