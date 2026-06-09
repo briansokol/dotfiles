@@ -208,8 +208,8 @@ fi
 # Keychain SSH agent management
 if (( $+commands[keychain] )); then
   _kc_keys=()
-  for _kc_key in id_ed25519 id_rsa id_ecdsa; do
-    [[ -f "$HOME/.ssh/$_kc_key" ]] && _kc_keys+=("$_kc_key")
+  for _kc_key in "$HOME"/.ssh/id_*(N); do
+    [[ -f "$_kc_key" ]] && _kc_keys+=("${_kc_key:t}")
   done
   if (( ${#_kc_keys[@]} > 0 )); then
     eval "$(keychain --eval --agents ssh --quiet "${_kc_keys[@]}")"
