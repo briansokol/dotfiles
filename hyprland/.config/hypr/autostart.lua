@@ -7,8 +7,10 @@ hl.exec_cmd('gsettings set org.gnome.desktop.interface gtk-theme "adw-gtk3"')
 hl.on("hyprland.start", function()
   hl.exec_cmd(startup_terminal)
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
-  hl.exec_cmd("kwalletd6")
-  hl.exec_cmd("/usr/lib/pam_kwallet_init")
+  -- Secrets are served by ksecretd (org.freedesktop.secrets), auto-unlocked at
+  -- SDDM login via pam_kwallet5. Do NOT start kwalletd6 / pam_kwallet_init here:
+  -- the PAM unlock socket is one-shot and already consumed by ksecretd, so a
+  -- second consumer only made unlock nondeterministic. SSH uses ssh-agent.
   hl.exec_cmd("easyeffects --gapplication-service")
   hl.exec_cmd("hyprpaper & waybar & swaync & swayosd-server & hypridle")
 end)

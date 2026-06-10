@@ -15,6 +15,13 @@ hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("XDG_MENU_PREFIX", "plasma-")
 hl.env("GSK_RENDERER", "gl")
 
+-- SSH via persistent ssh-agent (passphrase entered once per boot, cached in agent).
+-- Set here, not in ~/.config/environment.d, because start-hyprland does not import
+-- environment.d into launched apps (only KDE/systemd-user sessions do).
+hl.env("SSH_AUTH_SOCK", "/run/user/1000/ssh-agent.socket")
+hl.env("SSH_ASKPASS", "/usr/bin/ksshaskpass")
+hl.env("SSH_ASKPASS_REQUIRE", "prefer")
+
 hl.config({
   xwayland = {
     force_zero_scaling = true,
