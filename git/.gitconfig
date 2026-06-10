@@ -11,11 +11,11 @@
 # clears any pre-existing helper (e.g. osxkeychain) before gh takes over.
 # Portable form: !gh resolves via PATH so this works on macOS and Linux.
 [credential "https://github.com"]
-	helper =
-	helper = !gh auth git-credential
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
 [credential "https://gist.github.com"]
-	helper =
-	helper = !gh auth git-credential
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
 
 [init]
 	defaultBranch = main
