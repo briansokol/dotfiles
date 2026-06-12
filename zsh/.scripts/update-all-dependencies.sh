@@ -144,6 +144,7 @@ RUN_NPM=true
 RUN_HOMEBREW=true
 RUN_ZINIT=true
 RUN_UV=true
+RUN_CLAUDE=true
 RUN_GIT_CHECK=true
 RUN_SYNC_PACKAGES=false
 
@@ -184,8 +185,9 @@ if [[ $# -gt 0 ]]; then
     RUN_HOMEBREW=false
     RUN_ZINIT=false
     RUN_UV=false
+    RUN_CLAUDE=false
 
-    while getopts "apynhzsu" opt; do
+    while getopts "apynhzsuc" opt; do
         case $opt in
             a) RUN_APT=true ;;
             p) RUN_PACMAN=true ;;
@@ -195,6 +197,7 @@ if [[ $# -gt 0 ]]; then
             z) RUN_ZINIT=true ;;
             s) RUN_SYNC_PACKAGES=true ;;
             u) RUN_UV=true ;;
+            c) RUN_CLAUDE=true ;;
             \?) ;; # Ignore invalid options
         esac
     done
@@ -864,6 +867,33 @@ else
     print_section "uv Global Tools"
     print_skip "uv skipped (not requested by user)"
     SKIPPED_ITEMS+=("uv")
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Update Claude Code
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if [[ "$RUN_CLAUDE" = true ]]; then
+    if command_exists claude; then
+        print_section "Updating Claude Code"
+
+        print_info "Checking for Claude Code updates..."
+        if claude update; then
+            UPDATED_ITEMS+=("Claude Code")
+            print_success "Claude Code updated successfully"
+        else
+            print_warning "Failed to update Claude Code"
+            SKIPPED_ITEMS+=("Claude Code (update failed)")
+        fi
+    else
+        print_section "Claude Code"
+        print_skip "claude not found, skipping"
+        SKIPPED_ITEMS+=("Claude Code")
+    fi
+else
+    print_section "Claude Code"
+    print_skip "Claude Code skipped (not requested by user)"
+    SKIPPED_ITEMS+=("Claude Code")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -45,6 +45,7 @@ update-all -p                   # Update only Pacman (Arch Linux)
 update-all -y                   # Update only Yay AUR packages
 update-all -z                   # Update only Zinit plugins
 update-all -u                   # Update uv and global uv tools
+update-all -c                   # Update Claude Code (claude update)
 update-all -s                   # Install missing packages from Brewfile / packages/<distro>.txt
 update-all --sync-packages      # Same as -s (opt-in: prompts for sudo on Linux)
 update-all --no-git-check       # Skip dotfiles repository update check
