@@ -165,6 +165,7 @@ agent_panel_scope = "all"
 # delivery = "off"
 
 # Play sounds when agents change state in background workspaces
+delivery = "system"
 [ui.sound]
 # enabled = true
 # Optional custom mp3 sound files. Relative paths are resolved from this config file's directory.
