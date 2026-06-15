@@ -92,6 +92,16 @@ install_missing_packages() {
                 sudo apt-get install -y "${pkgs[@]}"
                 print_success "apt manifest in sync"
             fi
+            if command_exists flatpak && [[ -f "$repo_dir/packages/flatpak.txt" ]]; then
+                manifest="$repo_dir/packages/flatpak.txt"
+                pkgs=("${(@f)$(grep -vE '^\s*(#|$)' "$manifest")}")
+                if (( ${#pkgs[@]} > 0 )); then
+                    print_section "📦 Sync packages (flatpak)"
+                    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+                    flatpak install -y flathub "${pkgs[@]}"
+                    print_success "flatpak manifest in sync"
+                fi
+            fi
             ;;
     esac
 }
@@ -145,6 +155,7 @@ RUN_HOMEBREW=true
 RUN_ZINIT=true
 RUN_UV=true
 RUN_CLAUDE=true
+RUN_FLATPAK=true
 RUN_GIT_CHECK=true
 RUN_SYNC_PACKAGES=false
 
@@ -186,8 +197,9 @@ if [[ $# -gt 0 ]]; then
     RUN_ZINIT=false
     RUN_UV=false
     RUN_CLAUDE=false
+    RUN_FLATPAK=false
 
-    while getopts "apynhzsuc" opt; do
+    while getopts "apynhzsucf" opt; do
         case $opt in
             a) RUN_APT=true ;;
             p) RUN_PACMAN=true ;;
@@ -198,6 +210,7 @@ if [[ $# -gt 0 ]]; then
             s) RUN_SYNC_PACKAGES=true ;;
             u) RUN_UV=true ;;
             c) RUN_CLAUDE=true ;;
+            f) RUN_FLATPAK=true ;;
             \?) ;; # Ignore invalid options
         esac
     done
@@ -677,6 +690,35 @@ else
     print_section "Yay (AUR)"
     print_skip "Yay skipped (not requested by user)"
     SKIPPED_ITEMS+=("Yay")
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Update Flatpak Apps
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+if [[ "$RUN_FLATPAK" = true ]]; then
+    if command_exists flatpak; then
+        print_section "Updating Flatpak Apps"
+
+        print_info "Updating Flatpak apps and runtimes..."
+        if flatpak update -y; then
+            print_info "Removing unused runtimes..."
+            flatpak uninstall --unused -y 2>/dev/null || true
+            UPDATED_ITEMS+=("Flatpak apps")
+            print_success "Flatpak updated successfully"
+        else
+            print_warning "Failed to update Flatpak apps"
+            SKIPPED_ITEMS+=("Flatpak (update failed)")
+        fi
+    else
+        print_section "Flatpak"
+        print_skip "flatpak not found, skipping"
+        SKIPPED_ITEMS+=("Flatpak")
+    fi
+else
+    print_section "Flatpak"
+    print_skip "Flatpak skipped (not requested by user)"
+    SKIPPED_ITEMS+=("Flatpak")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -1,0 +1,6 @@
+# Flatpak apps (flatpak install flathub <app-id>).
+# Apply with: bootstrap.sh / update-all -s. Requires flatpak + the flathub remote
+# (both set up automatically by bootstrap.sh).
+# Lines starting with `#` and blank lines are ignored. Use reverse-DNS app IDs,
+# e.g. find one with: flatpak search <name>
+

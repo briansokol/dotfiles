@@ -38,15 +38,16 @@ stow --no-folding <package>     # Prevent directory-level symlinks (creates file
 The `update-all` script ([zsh/.scripts/update-all-dependencies.sh](zsh/.scripts/update-all-dependencies.sh)) manages all system dependencies:
 
 ```bash
-update-all                      # Update everything (Homebrew, npm, Zinit, Pacman, Yay, APT, uv tools)
+update-all                      # Update everything (Homebrew, npm, Zinit, Pacman, Yay, APT, Flatpak, uv tools)
 update-all -h                   # Update only Homebrew (macOS)
 update-all -n                   # Update only npm global packages
 update-all -p                   # Update only Pacman (Arch Linux)
 update-all -y                   # Update only Yay AUR packages
+update-all -f                   # Update only Flatpak apps
 update-all -z                   # Update only Zinit plugins
 update-all -u                   # Update uv and global uv tools
 update-all -c                   # Update Claude Code (claude update)
-update-all -s                   # Install missing packages from Brewfile / packages/<distro>.txt
+update-all -s                   # Install missing packages from Brewfile / packages/<distro>.txt / packages/flatpak.txt
 update-all --sync-packages      # Same as -s (opt-in: prompts for sudo on Linux)
 update-all --no-git-check       # Skip dotfiles repository update check
 ```
@@ -242,6 +243,7 @@ and (optionally) `update-all -s`:
 | `packages/arch.txt` | Arch | `pacman -S --needed` |
 | `packages/aur.txt` | Arch | `yay -S --needed` |
 | `packages/ubuntu.txt` | Ubuntu/Debian | `apt-get install -y` |
+| `packages/flatpak.txt` | Linux (any) | `flatpak install flathub` (reverse-DNS app IDs) |
 
 Ubuntu's apt is intentionally sparse — `bootstrap.sh` installs `starship`/`atuin` via their
 official install scripts and warns about `lazygit`/`git-delta`/`btop`/`eza` (which often

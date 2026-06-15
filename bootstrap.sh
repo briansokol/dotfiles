@@ -212,6 +212,23 @@ install_packages_ubuntu() {
     fi
 }
 
+# Flatpak apps (Linux). Adds the flathub remote, then installs everything in
+# packages/flatpak.txt. flatpak itself comes from the distro manifest above.
+install_flatpak_apps() {
+    if ! command_exists flatpak; then
+        print_warning "flatpak not installed — skipping Flatpak apps."
+        return
+    fi
+    print_section "Installing Flatpak apps (flathub)"
+    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    local pkgs
+    if mapfile -t pkgs < <(read_manifest "$REPO_DIR/packages/flatpak.txt") && (( ${#pkgs[@]} > 0 )); then
+        flatpak install -y flathub "${pkgs[@]}"
+    else
+        print_skip "No apps in packages/flatpak.txt."
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # Plugin manager bootstrap
 # ---------------------------------------------------------------------------
@@ -312,8 +329,8 @@ print_section "Dotfiles bootstrap — platform: $OS"
 if (( SKIP_PACKAGES == 0 )); then
     case "$OS" in
         macos)  ensure_prereqs_macos;  install_packages_macos ;;
-        arch)   ensure_prereqs_arch;   install_packages_arch ;;
-        ubuntu) ensure_prereqs_ubuntu; install_packages_ubuntu ;;
+        arch)   ensure_prereqs_arch;   install_packages_arch;   install_flatpak_apps ;;
+        ubuntu) ensure_prereqs_ubuntu; install_packages_ubuntu; install_flatpak_apps ;;
     esac
 else
     print_skip "Skipping package install (--no-packages)."

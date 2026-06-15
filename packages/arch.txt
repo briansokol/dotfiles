@@ -21,6 +21,7 @@ lazygit
 jq
 btop
 atuin
+flatpak
 yazi
 git-delta
 tree-sitter-cli
