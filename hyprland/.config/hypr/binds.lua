@@ -84,3 +84,4 @@ hl.bind(main_mod .. " + PERIOD", hl.dsp.exec_cmd("rofimoji --selector rofi --act
 hl.bind(main_mod .. " + S", hl.dsp.exec_cmd("hyprctl dispatch togglespecialworkspace magic"))
 hl.bind(super_shift .. " + S", hl.dsp.exec_cmd("hyprctl dispatch movetoworkspacesilent special:magic"))
 hl.bind(super_shift .. " + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper.sh next"))
+hl.bind(main_mod .. " + GRAVE", hl.dsp.exec_cmd("hyprctl dispatch hyprexpo:expo toggle"))
