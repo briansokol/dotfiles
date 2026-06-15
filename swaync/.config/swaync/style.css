@@ -311,8 +311,8 @@ scrollbar trough {
 }
 
 .widget-volume label {
+  font-size: 1.5rem;
   color: @sapphire;
-  padding: 0 1rem;
 }
 
 .widget-volume trough highlight {
