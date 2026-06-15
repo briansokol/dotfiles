@@ -3,6 +3,7 @@ local startup_terminal = terminal .. " --quit-after-last-window-closed=false --i
 
 hl.exec_cmd('gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"')
 hl.exec_cmd('gsettings set org.gnome.desktop.interface gtk-theme "adw-gtk3"')
+hl.exec_cmd('gsettings set org.gnome.desktop.interface cursor-theme "catppuccin-mocha-mauve-cursors"')
 
 hl.on("hyprland.start", function()
   -- xdg-desktop-portal.service has Requisite=graphical-session.target, which
@@ -24,6 +25,7 @@ hl.on("hyprland.start", function()
   -- does not, so trigger it manually. SSH uses ssh-agent.
   hl.exec_cmd("/usr/lib/pam_kwallet_init")
   hl.exec_cmd("easyeffects --gapplication-service")
+  hl.exec_cmd("hyprctl setcursor catppuccin-mocha-mauve-cursors 24")
   hl.exec_cmd("wl-paste --type text --watch cliphist store &")
   hl.exec_cmd("wl-paste --type image --watch cliphist store &")
   hl.exec_cmd("hyprpm reload -n")
