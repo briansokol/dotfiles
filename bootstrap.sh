@@ -24,7 +24,7 @@ cd "$REPO_DIR"
 # Stow package sets. p10k is intentionally excluded (disabled in .zshrc).
 COMMON=(zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop)
 MACOS_ONLY=(aerospace sketchybar)
-LINUX_ONLY=(hyprland waybar wofi swaync swayosd)
+LINUX_ONLY=(hyprland waybar swaync swayosd)
 
 # Colors
 if [[ -t 1 ]]; then

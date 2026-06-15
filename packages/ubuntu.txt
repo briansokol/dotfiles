@@ -31,7 +31,6 @@ npm
 
 # Wayland desktop (if running Ubuntu with Wayland; Hyprland not in Ubuntu repos)
 waybar
-wofi
 swaync
 pavucontrol
 brightnessctl
