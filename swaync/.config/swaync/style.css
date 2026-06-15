@@ -176,6 +176,7 @@ trough {
   background-color: @sky;
   box-shadow: none;
   padding: 8px;
+  margin-right: 4px;
 }
 
 .control-center .widget-title button:hover {
