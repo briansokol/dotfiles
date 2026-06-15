@@ -5,7 +5,6 @@
     font-size: 16px;
     min-height: 0;
     font-weight: bold;
-    transition: none;
 }
 
 window#waybar {
@@ -183,4 +182,37 @@ button {
 
 #power-profiles-daemon {
     color: @lavender;
+}
+#workspaces button,
+#mpris,
+#pulseaudio,
+#clock,
+#battery,
+#cpu,
+#memory,
+#backlight,
+#network,
+#bluetooth,
+#temperature,
+#power-profiles-daemon,
+#custom-updates,
+#custom-weather,
+#custom-notification {
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#pulseaudio:hover,
+#clock:hover,
+#battery:hover,
+#cpu:hover,
+#memory:hover,
+#backlight:hover,
+#network:hover,
+#bluetooth:hover,
+#temperature:hover,
+#power-profiles-daemon:hover,
+#custom-updates:hover,
+#custom-weather:hover,
+#custom-notification:hover {
+    background-color: alpha(@surface1, 0.8);
 }
