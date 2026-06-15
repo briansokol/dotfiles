@@ -37,11 +37,15 @@ ghostty
 hyprland
 hypridle
 hyprlock
-hyprpaper
 waybar
-wofi
 rofi-wayland
 swaync
+swww
+cliphist
+hyprpicker
+power-profiles-daemon
+pacman-contrib
+lm_sensors
 pavucontrol
 brightnessctl
 playerctl

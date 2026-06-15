@@ -2,3 +2,5 @@
 # Apply with: yay -S --needed - < packages/aur.txt (also run by bootstrap.sh and update-all -s)
 
 swayosd-git
+rofimoji
+catppuccin-cursors-mocha
