@@ -79,3 +79,4 @@ hl.bind("CTRL + SHIFT + PRINT", hl.dsp.exec_cmd("hyprshot -m region"))
 hl.bind(super_shift .. " + L", hl.dsp.exec_cmd("hyprlock"))
 
 hl.bind(main_mod .. " + SHIFT + V", hl.dsp.exec_cmd("~/.config/rofi/scripts/clipboard.sh"))
+hl.bind(main_mod .. " + PERIOD", hl.dsp.exec_cmd("rofimoji --selector rofi --action copy"))
