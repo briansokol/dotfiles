@@ -46,7 +46,6 @@ button {
 #full-segments,
 #custom-weather,
 #custom-updates,
-#power-profiles-daemon,
 #workspaces button,
 #mpris {
     margin: 6px 4px 0;
@@ -65,7 +64,8 @@ button {
 #center-segments,
 #memory,
 #pulseaudio,
-#bluetooth {
+#bluetooth,
+#power-profiles-daemon {
     margin: 6px 0 0;
 }
 
