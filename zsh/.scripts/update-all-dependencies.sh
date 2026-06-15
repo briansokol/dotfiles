@@ -825,7 +825,33 @@ if [[ "$RUN_NPM" = true ]]; then
                     # Install updates if any packages need updating
                     if [[ ${#PACKAGES_TO_UPDATE[@]} -gt 0 ]]; then
                         print_info "Updating ${#PACKAGES_TO_UPDATE[@]} package(s) in Node $version: ${PACKAGES_TO_UPDATE[*]}"
-                        if npm install -g "${PACKAGES_TO_UPDATE[@]}" 2>/dev/null; then
+
+                        # The system Node install (vs nvm-managed versions) may live in a
+                        # root-owned prefix (e.g. /usr/lib/node_modules on Arch), which needs
+                        # sudo. But on macOS the Homebrew prefix is user-owned, so sudo would
+                        # wrongly create root-owned files. Decide by checking whether the
+                        # global node_modules dir is actually writable rather than by OS.
+                        local -a NPM_INSTALL_CMD=(npm install -g)
+                        local NPM_GLOBAL_ROOT
+                        NPM_GLOBAL_ROOT=$(npm root -g 2>/dev/null)
+                        if [[ "$version" == "system" ]] && [[ $EUID -ne 0 ]] && [[ -n "$NPM_GLOBAL_ROOT" ]] && [[ ! -w "$NPM_GLOBAL_ROOT" ]]; then
+                            if command_exists sudo; then
+                                print_info "System Node global packages require sudo. You may be prompted for your password."
+                                if sudo -v; then
+                                    NPM_INSTALL_CMD=(sudo npm install -g)
+                                else
+                                    print_warning "sudo authentication failed, skipping system Node npm updates"
+                                    SKIPPED_ITEMS+=("NPM system Node (no sudo access)")
+                                    continue
+                                fi
+                            else
+                                print_warning "sudo not available, skipping system Node npm updates"
+                                SKIPPED_ITEMS+=("NPM system Node (no sudo)")
+                                continue
+                            fi
+                        fi
+
+                        if "${NPM_INSTALL_CMD[@]}" "${PACKAGES_TO_UPDATE[@]}"; then
                             # Add packages to the tracking array
                             for pkg in "${PACKAGES_TO_UPDATE[@]}"; do
                                 NPM_UPDATED_PACKAGES+=("$pkg")
