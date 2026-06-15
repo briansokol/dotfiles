@@ -135,6 +135,9 @@ alias gas='git add . && git status'
 # Micro Alias
 (( $+commands[micro] )) && alias mi='micro'
 
+# Zed Alias (Arch ships the CLI as `zeditor`)
+(( $+commands[zeditor] && ! $+commands[zed] )) && alias zed='zeditor'
+
 # Neovim
 alias nv='nvim'
 alias vim='nvim'
