@@ -53,19 +53,17 @@
     }
   },
   "widgets": [
-    "inhibitors",
+    "buttons-grid",
     "title",
+    "mpris",
+    "volume",
+    "backlight",
     "dnd",
     "notifications"
   ],
   "widget-config": {
     "notifications": {
       "vexpand": true
-    },
-    "inhibitors": {
-      "text": "Inhibitors",
-      "button-text": "Clear All",
-      "clear-all-button": true
     },
     "title": {
       "text": "Notifications",
@@ -75,25 +73,50 @@
     "dnd": {
       "text": "Do Not Disturb"
     },
-    "label": {
-      "max-lines": 5,
-      "text": "Label Text"
-    },
     "mpris": {
       "blacklist": [],
-      "autohide": false,
+      "autohide": true,
       "show-album-art": "always",
       "loop-carousel": false
     },
+    "volume": {
+      "label": "󰕾"
+    },
+    "backlight": {
+      "label": "󰃟",
+      "device": "nvidia_wmi_ec_backlight"
+    },
     "buttons-grid": {
-      "buttons-per-row": 7,
+      "buttons-per-row": 5,
       "actions": [
         {
-          "label": "直",
+          "label": "󰤨",
           "type": "toggle",
           "active": true,
           "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && nmcli radio wifi on || nmcli radio wifi off'",
           "update-command": "sh -c '[[ $(nmcli radio wifi) == \"enabled\" ]] && echo true || echo false'"
+        },
+        {
+          "label": "󰂯",
+          "type": "toggle",
+          "active": true,
+          "command": "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && rfkill unblock bluetooth || rfkill block bluetooth'",
+          "update-command": "sh -c 'rfkill list bluetooth | grep -q \"Soft blocked: yes\" && echo false || echo true'"
+        },
+        {
+          "label": "󰍉",
+          "type": "command",
+          "command": "hyprpicker -a"
+        },
+        {
+          "label": "󰹑",
+          "type": "command",
+          "command": "hyprshot -m region"
+        },
+        {
+          "label": "󰐥",
+          "type": "command",
+          "command": "hyprshutdown"
         }
       ]
     }
