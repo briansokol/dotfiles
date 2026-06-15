@@ -2,7 +2,7 @@
   "position": "top",
   "modules-left": ["hyprland/workspaces", "mpris"],
   "modules-center": ["hyprland/window"],
-  "modules-right": ["custom/updates", "cpu", "memory", "custom/weather", "network", "bluetooth", "pulseaudio", "backlight", "battery", "clock", "custom/notification"],
+  "modules-right": ["custom/updates", "cpu", "memory", "temperature", "custom/weather", "power-profiles-daemon", "network", "bluetooth", "pulseaudio", "backlight", "idle_inhibitor", "battery", "clock", "custom/notification"],
   "clock": {
     "format": "<span>  </span>{:%a %d    %I:%M %p}",
     "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
@@ -119,5 +119,33 @@
     "exec": "~/.config/waybar/scripts/updates.sh",
     "on-click": "ghostty --gtk-single-instance=true -e sh -c 'yay -Syu; read -n1 -p \"Done. Press any key.\"'",
     "tooltip": true
+  },
+  "temperature": {
+    "thermal-zone": 0,
+    "critical-threshold": 85,
+    "format": "<span> </span>{temperatureC}°C",
+    "format-critical": "<span> </span>{temperatureC}°C",
+    "interval": 5,
+    "on-click": "ghostty --gtk-single-instance=true -e btop"
+  },
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip-format": "Power profile: {profile}",
+    "tooltip": true,
+    "format-icons": {
+      "default": "",
+      "performance": "󰓅",
+      "balanced": "󰾅",
+      "power-saver": "󰌪"
+    }
+  },
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "󰅶",
+      "deactivated": "󰾪"
+    },
+    "tooltip-format-activated": "Idle inhibited (caffeine on)",
+    "tooltip-format-deactivated": "Idle normal"
   }
 }

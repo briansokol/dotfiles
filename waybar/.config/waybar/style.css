@@ -33,6 +33,8 @@ button {
 #backlight,
 #network,
 #bluetooth,
+#temperature,
+#power-profiles-daemon,
 #custom-updates,
 #custom-weather,
 #custom-notification {
@@ -169,4 +171,16 @@ button {
 
 #custom-updates.updated {
     color: @green;
+}
+
+#temperature {
+    color: @maroon;
+}
+
+#temperature.critical {
+    color: @red;
+}
+
+#power-profiles-daemon {
+    color: @lavender;
 }
