@@ -5,6 +5,15 @@ hl.exec_cmd('gsettings set org.gnome.desktop.interface color-scheme "prefer-dark
 hl.exec_cmd('gsettings set org.gnome.desktop.interface gtk-theme "adw-gtk3"')
 
 hl.on("hyprland.start", function()
+  -- xdg-desktop-portal.service has Requisite=graphical-session.target, which
+  -- Hyprland never activates on its own. Without it the portal refuses to start,
+  -- so any Qt app that registers with the portal (ksecretd, swaync) fails with
+  -- "Could not activate remote peer 'org.freedesktop.portal.Desktop'".
+  -- graphical-session.target itself has RefuseManualStart=yes, so we start our
+  -- hyprland-session.target (BindsTo it), which pulls it up as a dependency.
+  -- Import env into the user bus first so portal-activated services inherit it.
+  hl.exec_cmd("dbus-update-activation-environment --systemd --all")
+  hl.exec_cmd("systemctl --user start hyprland-session.target")
   hl.exec_cmd(startup_terminal)
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
   -- ksecretd is launched by pam_kwallet5 at SDDM login but waits for its session
