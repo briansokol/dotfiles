@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# swww wallpaper setter / random cycler.
+# awww (formerly swww) wallpaper setter / random cycler.
 # Usage: wallpaper.sh [init|next]
 DIR="$HOME/Pictures/wallpapers"
 STATE="${XDG_CACHE_HOME:-$HOME/.cache}/current-wallpaper"
@@ -11,14 +11,14 @@ pick="${papers[RANDOM % ${#papers[@]}]}"
 
 case "$1" in
   init)
-    swww-daemon 2>/dev/null &
+    awww-daemon 2>/dev/null &
     sleep 0.3
     last=$(cat "$STATE" 2>/dev/null)
     [ -f "$last" ] && pick="$last"
     ;;
 esac
 
-swww img "$pick" \
+awww img "$pick" \
   --transition-type grow \
   --transition-pos 0.95,0.05 \
   --transition-duration 1.2 \

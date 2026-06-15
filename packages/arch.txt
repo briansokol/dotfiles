@@ -40,7 +40,7 @@ hyprlock
 waybar
 rofi-wayland
 swaync
-swww
+awww
 cliphist
 hyprpicker
 power-profiles-daemon
