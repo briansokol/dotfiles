@@ -18,3 +18,15 @@ hl.window_rule({
   },
   no_focus = true,
 })
+
+hl.window_rule({
+  name = "float-utilities",
+  match = { class = "^(pavucontrol|org.pulseaudio.pavucontrol|blueman-manager|nm-connection-editor|org.kde.polkit-kde-authentication-agent-1)$" },
+  float = true,
+})
+
+hl.window_rule({
+  name = "float-dialogs",
+  match = { title = "^(Open File|Save File|Save As|Choose Files|Open Folder)$" },
+  float = true,
+})
