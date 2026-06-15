@@ -24,5 +24,7 @@ hl.on("hyprland.start", function()
   -- does not, so trigger it manually. SSH uses ssh-agent.
   hl.exec_cmd("/usr/lib/pam_kwallet_init")
   hl.exec_cmd("easyeffects --gapplication-service")
+  hl.exec_cmd("wl-paste --type text --watch cliphist store &")
+  hl.exec_cmd("wl-paste --type image --watch cliphist store &")
   hl.exec_cmd("hyprpaper & waybar & swaync & swayosd-server & hypridle")
 end)
