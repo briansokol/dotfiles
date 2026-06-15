@@ -547,12 +547,7 @@ fi
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 if [[ "$RUN_PACMAN" = true ]]; then
-    # Skip pacman if yay is available (yay handles both official repos and AUR)
-    if command_exists yay; then
-        print_section "Pacman"
-        print_skip "Skipping Pacman (yay will handle all package updates)"
-        SKIPPED_ITEMS+=("Pacman (using yay instead)")
-    elif command_exists pacman; then
+    if command_exists pacman; then
         print_section "Updating Pacman"
 
         # Determine if we need sudo prefix
@@ -592,7 +587,9 @@ if [[ "$RUN_PACMAN" = true ]]; then
             # Remove orphaned packages (dependencies no longer needed)
             orphans=$(pacman -Qdtq 2>/dev/null || true)
             if [[ -n "$orphans" ]]; then
-                $SUDO_CMD pacman -Rns --noconfirm $orphans
+                # zsh doesn't word-split unquoted scalars; split on newlines so
+                # each orphan is a separate pacman target (not one giant arg).
+                $SUDO_CMD pacman -Rns --noconfirm ${(f)orphans}
                 print_success "Removed orphaned packages"
             else
                 print_info "No orphaned packages found"
@@ -627,26 +624,50 @@ if [[ "$RUN_YAY" = true ]]; then
     if command_exists yay; then
         print_section "Updating Yay (AUR)"
 
-        print_info "Syncing AUR databases and upgrading packages..."
+        # Interactive yay (declining a package) exits non-zero — don't let it
+        # trip the global ERR trap and abort the whole update run.
+        trap - ERR
 
-        # Capture list of packages that will be updated
-        outdated_packages=$(yay -Qu 2>/dev/null | awk '{print $1}' || true)
-        if [[ -n "$outdated_packages" ]]; then
-            while IFS= read -r package; do
-                YAY_UPDATED_PACKAGES+=("$package")
-            done <<< "$outdated_packages"
+        print_info "Checking for AUR updates..."
+        # AUR-only updates; official repos are handled by pacman above.
+        outdated_aur=$(yay -Qua 2>/dev/null | awk '{print $1}' || true)
+
+        if [[ -z "$outdated_aur" ]]; then
+            print_info "No AUR updates available"
+            print_success "All AUR packages are up-to-date"
+        else
+            # Upgrade each AUR package individually so its PKGBUILD diff is shown
+            # and you approve (or decline) one at a time. Iterate with a for loop
+            # over newline-split output (NOT `while read <<<`): a here-string
+            # redirect becomes yay's stdin, so its prompts would read EOF instead
+            # of the keyboard and auto-proceed without waiting.
+            for package in ${(f)outdated_aur}; do
+                print_info "Reviewing $package..."
+                # --answerclean None: skip the cleanBuild menu (reuse build files)
+                # --answerdiff All:  auto-show every PKGBUILD diff
+                # (no --noconfirm):  yay still asks "Proceed with install?" per package
+                if yay -S --diffmenu --answerclean None --answerdiff All "$package"; then
+                    YAY_UPDATED_PACKAGES+=("$package")
+                else
+                    print_warning "Skipped $package (declined or build failed)"
+                    SKIPPED_ITEMS+=("AUR: $package")
+                fi
+            done
+
+            if [[ ${#YAY_UPDATED_PACKAGES[@]} -gt 0 ]]; then
+                UPDATED_ITEMS+=("Yay AUR packages")
+            fi
         fi
-
-        # Update and upgrade all packages (including AUR)
-        yay -Syu --noconfirm
 
         print_info "Cleaning package cache..."
         # Clean uninstalled packages from cache
         # Suppress errors about temporary download files that can't be opened
         yay -Sc --noconfirm 2>&1 | grep -v "could not open file.*download-" || true
 
-        UPDATED_ITEMS+=("Yay AUR packages")
-        print_success "Yay updated successfully"
+        # Re-enable error trapping
+        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+
+        print_success "Yay (AUR) processing complete"
     else
         print_section "Yay (AUR)"
         print_skip "yay not found, skipping (not installed or not an Arch Linux system)"

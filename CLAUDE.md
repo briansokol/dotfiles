@@ -199,7 +199,7 @@ The `.zshrc` includes a `chpwd` hook that automatically runs `nvm use` when:
 
 **Key Behaviors** ([update-all-dependencies.sh](zsh/.scripts/update-all-dependencies.sh)):
 - **Git Self-Update**: Checks dotfiles repo first, pulls if behind, exits for shell restart
-- **Smart Package Manager Selection**: Skips pacman if yay is available (yay handles both)
+- **Separate Official/AUR Updates**: pacman always handles official-repo packages; yay handles AUR only, looping per package to show the PKGBUILD diff and require approval before each build
 - **NVM Multi-Version Updates**: Loops through all installed Node versions, updates global packages per version
 - **Default Packages**: Installs missing packages from `~/.nvm/default-packages`
 - **Dependencies**: Requires `jq` for npm updates (JSON parsing)
