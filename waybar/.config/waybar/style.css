@@ -33,6 +33,7 @@ button {
 #backlight,
 #network,
 #bluetooth,
+#custom-updates,
 #custom-weather,
 #custom-notification {
   padding: 3px 8px;
@@ -51,6 +52,7 @@ button {
 #left-segments,
 #clock,
 #network,
+#custom-updates,
 #cpu {
     margin: 6px 0 0 4px;
     border-radius: 999px 0 0 999px;
@@ -159,4 +161,12 @@ button {
 
 #custom-weather {
 	color: @text;
+}
+
+#custom-updates {
+    color: @peach;
+}
+
+#custom-updates.updated {
+    color: @green;
 }
