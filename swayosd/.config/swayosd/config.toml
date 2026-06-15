@@ -4,3 +4,6 @@ top_margin = 0.12
 
 # Show percentage in OSD
 show_percentage = true
+
+# Clamp the volume OSD/slider to 100%
+max_volume = 100
