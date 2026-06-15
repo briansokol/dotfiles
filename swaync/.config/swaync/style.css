@@ -332,3 +332,28 @@ scrollbar trough {
 .image {
   padding-right: 0.5rem;
 }
+
+/* Quick-action grid buttons */
+.widget-buttons-grid > flowbox > flowboxchild > button {
+    background: alpha(@surface0, 0.6);
+    border-radius: 12px;
+    margin: 4px;
+    padding: 10px;
+    font-size: 1.2rem;
+    color: @text;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+    background: @surface1;
+}
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+    background: @sky;
+    color: @crust;
+}
+/* MPRIS card */
+.widget-mpris {
+    background: alpha(@surface0, 0.5);
+    border-radius: 16px;
+    padding: 8px;
+    margin: 8px;
+}
