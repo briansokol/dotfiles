@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Outputs waybar JSON with the count of pending official + AUR updates.
 official=$(checkupdates 2>/dev/null | wc -l)
-aur=$(command -v yay >/dev/null && yay -Qua 2>/dev/null | wc -l || echo 0)
+aur=$(command -v paru >/dev/null && paru -Qua 2>/dev/null | wc -l || echo 0)
 total=$((official + aur))
 
 if [ "$total" -eq 0 ]; then

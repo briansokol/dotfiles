@@ -117,7 +117,7 @@
     "return-type": "json",
     "interval": 1800,
     "exec": "~/.config/waybar/scripts/updates.sh",
-    "on-click": "ghostty --gtk-single-instance=true -e sh -c 'yay -Syu; read -n1 -p \"Done. Press any key.\"'",
+    "on-click": "ghostty --gtk-single-instance=true -e sh -c 'paru -Syu; read -n1 -p \"Done. Press any key.\"'",
     "tooltip": true
   },
   "temperature": {

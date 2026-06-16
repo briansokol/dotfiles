@@ -38,11 +38,11 @@ stow --no-folding <package>     # Prevent directory-level symlinks (creates file
 The `update-all` script ([zsh/.scripts/update-all-dependencies.sh](zsh/.scripts/update-all-dependencies.sh)) manages all system dependencies:
 
 ```bash
-update-all                      # Update everything (Homebrew, npm, Zinit, Pacman, Yay, APT, Flatpak, uv tools)
+update-all                      # Update everything (Homebrew, npm, Zinit, Pacman, Paru, APT, Flatpak, uv tools)
 update-all -h                   # Update only Homebrew (macOS)
 update-all -n                   # Update only npm global packages
 update-all -p                   # Update only Pacman (Arch Linux)
-update-all -y                   # Update only Yay AUR packages
+update-all -r                   # Update only Paru AUR packages
 update-all -f                   # Update only Flatpak apps
 update-all -z                   # Update only Zinit plugins
 update-all -u                   # Update uv and global uv tools
@@ -200,7 +200,7 @@ The `.zshrc` includes a `chpwd` hook that automatically runs `nvm use` when:
 
 **Key Behaviors** ([update-all-dependencies.sh](zsh/.scripts/update-all-dependencies.sh)):
 - **Git Self-Update**: Checks dotfiles repo first, pulls if behind, exits for shell restart
-- **Separate Official/AUR Updates**: pacman always handles official-repo packages; yay handles AUR only, looping per package to show the PKGBUILD diff and require approval before each build
+- **Separate Official/AUR Updates**: pacman always handles official-repo packages; paru handles AUR only, upgrading in a single transaction while showing each PKGBUILD diff and prompting for review/approval natively
 - **NVM Multi-Version Updates**: Loops through all installed Node versions, updates global packages per version
 - **Default Packages**: Installs missing packages from `~/.nvm/default-packages`
 - **Dependencies**: Requires `jq` for npm updates (JSON parsing)
@@ -241,7 +241,7 @@ and (optionally) `update-all -s`:
 |------|----------|------|
 | `Brewfile` | macOS | `brew bundle install --file=Brewfile` |
 | `packages/arch.txt` | Arch | `pacman -S --needed` |
-| `packages/aur.txt` | Arch | `yay -S --needed` |
+| `packages/aur.txt` | Arch | `paru -S --needed` |
 | `packages/ubuntu.txt` | Ubuntu/Debian | `apt-get install -y` |
 | `packages/flatpak.txt` | Linux (any) | `flatpak install flathub` (reverse-DNS app IDs) |
 

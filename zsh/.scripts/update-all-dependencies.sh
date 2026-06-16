@@ -78,12 +78,12 @@ install_missing_packages() {
                 sudo pacman -S --needed --noconfirm "${pkgs[@]}"
                 print_success "pacman manifest in sync"
             fi
-            if command_exists yay && [[ -f "$repo_dir/packages/aur.txt" ]]; then
-                print_section "📦 Sync packages (yay/AUR)"
+            if command_exists paru && [[ -f "$repo_dir/packages/aur.txt" ]]; then
+                print_section "📦 Sync packages (paru/AUR)"
                 manifest="$repo_dir/packages/aur.txt"
                 pkgs=("${(@f)$(grep -vE '^\s*(#|$)' "$manifest")}")
-                yay -S --needed --noconfirm "${pkgs[@]}"
-                print_success "yay manifest in sync"
+                paru -S --needed --noconfirm "${pkgs[@]}"
+                print_success "paru manifest in sync"
             fi
             if command_exists apt-get && [[ -f "$repo_dir/packages/ubuntu.txt" ]] && ! command_exists pacman; then
                 print_section "📦 Sync packages (apt)"
@@ -125,7 +125,7 @@ SKIPPED_ITEMS=()
 BREW_UPDATED_FORMULAE=()
 BREW_UPDATED_CASKS=()
 PACMAN_UPDATED_PACKAGES=()
-YAY_UPDATED_PACKAGES=()
+PARU_UPDATED_PACKAGES=()
 NPM_UPDATED_PACKAGES=()
 
 # Load NVM if available
@@ -149,7 +149,7 @@ trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
 # (it prompts for sudo every run — opt in with -s/--sync-packages).
 RUN_APT=true
 RUN_PACMAN=true
-RUN_YAY=true
+RUN_PARU=true
 RUN_NPM=true
 RUN_HOMEBREW=true
 RUN_ZINIT=true
@@ -191,7 +191,7 @@ set -- "${ARGS[@]}"
 if [[ $# -gt 0 ]]; then
     RUN_APT=false
     RUN_PACMAN=false
-    RUN_YAY=false
+    RUN_PARU=false
     RUN_NPM=false
     RUN_HOMEBREW=false
     RUN_ZINIT=false
@@ -199,11 +199,11 @@ if [[ $# -gt 0 ]]; then
     RUN_CLAUDE=false
     RUN_FLATPAK=false
 
-    while getopts "apynhzsucf" opt; do
+    while getopts "aprnhzsucf" opt; do
         case $opt in
             a) RUN_APT=true ;;
             p) RUN_PACMAN=true ;;
-            y) RUN_YAY=true ;;
+            r) RUN_PARU=true ;;
             n) RUN_NPM=true ;;
             h) RUN_HOMEBREW=true ;;
             z) RUN_ZINIT=true ;;
@@ -630,66 +630,56 @@ else
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Update Yay (AUR Helper for Arch Linux)
+# Update Paru (AUR Helper for Arch Linux)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-if [[ "$RUN_YAY" = true ]]; then
-    if command_exists yay; then
-        print_section "Updating Yay (AUR)"
+if [[ "$RUN_PARU" = true ]]; then
+    if command_exists paru; then
+        print_section "Updating Paru (AUR)"
 
-        # Interactive yay (declining a package) exits non-zero — don't let it
-        # trip the global ERR trap and abort the whole update run.
+        # Interactive paru (declining the transaction) exits non-zero — don't let
+        # it trip the global ERR trap and abort the whole update run.
         trap - ERR
 
         print_info "Checking for AUR updates..."
         # AUR-only updates; official repos are handled by pacman above.
-        outdated_aur=$(yay -Qua 2>/dev/null | awk '{print $1}' || true)
+        outdated_aur=$(paru -Qua 2>/dev/null | awk '{print $1}' || true)
 
         if [[ -z "$outdated_aur" ]]; then
             print_info "No AUR updates available"
             print_success "All AUR packages are up-to-date"
         else
-            # Upgrade each AUR package individually so its PKGBUILD diff is shown
-            # and you approve (or decline) one at a time. Iterate with a for loop
-            # over newline-split output (NOT `while read <<<`): a here-string
-            # redirect becomes yay's stdin, so its prompts would read EOF instead
-            # of the keyboard and auto-proceed without waiting.
-            for package in ${(f)outdated_aur}; do
-                print_info "Reviewing $package..."
-                # --answerclean None: skip the cleanBuild menu (reuse build files)
-                # --answerdiff All:  auto-show every PKGBUILD diff
-                # (no --noconfirm):  yay still asks "Proceed with install?" per package
-                if yay -S --diffmenu --answerclean None --answerdiff All "$package"; then
-                    YAY_UPDATED_PACKAGES+=("$package")
-                else
-                    print_warning "Skipped $package (declined or build failed)"
-                    SKIPPED_ITEMS+=("AUR: $package")
-                fi
-            done
-
-            if [[ ${#YAY_UPDATED_PACKAGES[@]} -gt 0 ]]; then
-                UPDATED_ITEMS+=("Yay AUR packages")
+            # paru shows each PKGBUILD diff and prompts for review + confirmation
+            # natively, so upgrade the AUR packages in a single transaction.
+            if paru -Sua; then
+                for package in ${(f)outdated_aur}; do
+                    PARU_UPDATED_PACKAGES+=("$package")
+                done
+                UPDATED_ITEMS+=("Paru AUR packages")
+            else
+                print_warning "AUR upgrade incomplete (declined or build failed)"
+                SKIPPED_ITEMS+=("Paru AUR upgrade")
             fi
         fi
 
         print_info "Cleaning package cache..."
         # Clean uninstalled packages from cache
         # Suppress errors about temporary download files that can't be opened
-        yay -Sc --noconfirm 2>&1 | grep -v "could not open file.*download-" || true
+        paru -Sc --noconfirm 2>&1 | grep -v "could not open file.*download-" || true
 
         # Re-enable error trapping
         trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
 
-        print_success "Yay (AUR) processing complete"
+        print_success "Paru (AUR) processing complete"
     else
-        print_section "Yay (AUR)"
-        print_skip "yay not found, skipping (not installed or not an Arch Linux system)"
-        SKIPPED_ITEMS+=("Yay")
+        print_section "Paru (AUR)"
+        print_skip "paru not found, skipping (not installed or not an Arch Linux system)"
+        SKIPPED_ITEMS+=("Paru")
     fi
 else
-    print_section "Yay (AUR)"
-    print_skip "Yay skipped (not requested by user)"
-    SKIPPED_ITEMS+=("Yay")
+    print_section "Paru (AUR)"
+    print_skip "Paru skipped (not requested by user)"
+    SKIPPED_ITEMS+=("Paru")
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1037,12 +1027,12 @@ if [[ ${#PACMAN_UPDATED_PACKAGES[@]} -gt 0 ]]; then
     done
 fi
 
-# Display detailed Yay AUR packages that were updated
-if [[ ${#YAY_UPDATED_PACKAGES[@]} -gt 0 ]]; then
+# Display detailed Paru AUR packages that were updated
+if [[ ${#PARU_UPDATED_PACKAGES[@]} -gt 0 ]]; then
     # De-duplicate the array
-    local -a deduped_yay=($(printf '%s\n' "${YAY_UPDATED_PACKAGES[@]}" | sort -u))
-    echo "\n${BOLD}${GREEN}Yay AUR packages updated (${#deduped_yay[@]}):${RESET}"
-    for package in "${deduped_yay[@]}"; do
+    local -a deduped_paru=($(printf '%s\n' "${PARU_UPDATED_PACKAGES[@]}" | sort -u))
+    echo "\n${BOLD}${GREEN}Paru AUR packages updated (${#deduped_paru[@]}):${RESET}"
+    for package in "${deduped_paru[@]}"; do
         echo "  ${GREEN}✓${RESET} $package"
     done
 fi
