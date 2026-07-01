@@ -24,7 +24,7 @@ cd "$REPO_DIR"
 # Stow package sets. p10k is intentionally excluded (disabled in .zshrc).
 COMMON=(zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop)
 MACOS_ONLY=(aerospace sketchybar)
-LINUX_ONLY=(hyprland waybar swaync swayosd)
+LINUX_ONLY=(hyprland waybar swaync swayosd yay)
 
 # Colors
 if [[ -t 1 ]]; then
@@ -129,15 +129,15 @@ ensure_prereqs_macos() {
 ensure_prereqs_arch() {
     print_section "Prerequisites (Arch)"
     sudo pacman -S --needed --noconfirm base-devel git stow
-    if ! command_exists paru; then
-        print_info "Building paru from AUR..."
+    if ! command_exists yay; then
+        print_info "Building yay from AUR..."
         local tmp; tmp="$(mktemp -d)"
-        git clone https://aur.archlinux.org/paru.git "$tmp/paru"
-        (cd "$tmp/paru" && makepkg -si --noconfirm)
+        git clone https://aur.archlinux.org/yay.git "$tmp/yay"
+        (cd "$tmp/yay" && makepkg -si --noconfirm)
         rm -rf "$tmp"
-        print_success "paru installed."
+        print_success "yay installed."
     else
-        print_skip "paru already installed."
+        print_skip "yay already installed."
     fi
 }
 
@@ -161,13 +161,13 @@ install_packages_macos() {
 }
 
 install_packages_arch() {
-    print_section "Installing packages (pacman + paru)"
+    print_section "Installing packages (pacman + yay)"
     local pkgs
     if mapfile -t pkgs < <(read_manifest "$REPO_DIR/packages/arch.txt") && (( ${#pkgs[@]} > 0 )); then
         sudo pacman -S --needed --noconfirm "${pkgs[@]}"
     fi
     if mapfile -t pkgs < <(read_manifest "$REPO_DIR/packages/aur.txt") && (( ${#pkgs[@]} > 0 )); then
-        paru -S --needed --noconfirm "${pkgs[@]}"
+        yay -S --needed --noconfirm "${pkgs[@]}"
     fi
 }
 

@@ -61,7 +61,7 @@ Linux/Wayland only: `hyprland waybar wofi swaync swayosd`
 ## Keeping things up to date
 
 ```sh
-update-all                  # update everything (zinit, brew/apt/pacman/paru, npm globals, uv tools)
+update-all                  # update everything (zinit, brew/apt/pacman/yay, npm globals, uv tools)
 update-all --sync-packages  # also install anything new from the manifests
 update-all -u               # update uv + globally installed uv tools only
 update-all -h               # show all flags

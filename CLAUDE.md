@@ -38,11 +38,11 @@ stow --no-folding <package>     # Prevent directory-level symlinks (creates file
 The `update-all` script ([zsh/.scripts/update-all-dependencies.sh](zsh/.scripts/update-all-dependencies.sh)) manages all system dependencies:
 
 ```bash
-update-all                      # Update everything (Homebrew, npm, Zinit, Pacman, Paru, APT, Flatpak, uv tools)
+update-all                      # Update everything (Homebrew, npm, Zinit, Pacman, Yay, APT, Flatpak, uv tools)
 update-all -h                   # Update only Homebrew (macOS)
 update-all -n                   # Update only npm global packages
 update-all -p                   # Update only Pacman (Arch Linux)
-update-all -r                   # Update only Paru AUR packages
+update-all -y                   # Update only Yay AUR packages
 update-all -f                   # Update only Flatpak apps
 update-all -z                   # Update only Zinit plugins
 update-all -u                   # Update uv and global uv tools
@@ -200,7 +200,7 @@ The `.zshrc` includes a `chpwd` hook that automatically runs `nvm use` when:
 
 **Key Behaviors** ([update-all-dependencies.sh](zsh/.scripts/update-all-dependencies.sh)):
 - **Git Self-Update**: Checks dotfiles repo first, pulls if behind, exits for shell restart
-- **Separate Official/AUR Updates**: pacman always handles official-repo packages; paru handles AUR only, upgrading in a single transaction while showing each PKGBUILD diff and prompting for review/approval natively
+- **Separate Official/AUR Updates**: pacman always handles official-repo packages; yay handles AUR only, upgrading in a single `-Sua` sysupgrade while showing each PKGBUILD diff and prompting for review/approval natively. The sysupgrade fires yay's `UpgradeSelect` Lua hook, which warns when an AUR package's maintainer has changed (see "yay maintainer-change hook" below)
 - **NVM Multi-Version Updates**: Loops through all installed Node versions, updates global packages per version
 - **Default Packages**: Installs missing packages from `~/.nvm/default-packages`
 - **Dependencies**: Requires `jq` for npm updates (JSON parsing)
@@ -241,7 +241,7 @@ and (optionally) `update-all -s`:
 |------|----------|------|
 | `Brewfile` | macOS | `brew bundle install --file=Brewfile` |
 | `packages/arch.txt` | Arch | `pacman -S --needed` |
-| `packages/aur.txt` | Arch | `paru -S --needed` |
+| `packages/aur.txt` | Arch | `yay -S --needed` |
 | `packages/ubuntu.txt` | Ubuntu/Debian | `apt-get install -y` |
 | `packages/flatpak.txt` | Linux (any) | `flatpak install flathub` (reverse-DNS app IDs) |
 
@@ -260,6 +260,24 @@ real `~/.config/btop/btop.conf` (or via btop's options menu → `O`):
 ```
 color_theme = "catppuccin_mocha"
 ```
+
+## yay maintainer-change hook (Linux/Arch)
+
+The `yay/` stow package ships a single Lua hook, [yay/.config/yay/init.lua](yay/.config/yay/init.lua),
+loaded automatically by yay v13+ from `~/.config/yay/init.lua`. It registers an
+`UpgradeSelect` autocmd that fires on every `yay -Syu` / `yay -Sua` and warns
+(via `yay.log.error`) when an AUR package's maintainer has changed since the last
+upgrade. This guards against AUR package hijacking / ownership handoffs.
+
+- **State**: last-seen maintainer per package is cached at
+  `${XDG_CACHE_HOME:-~/.cache}/yay/maintainer_cache` (`pkgname=maintainer` per line).
+- **First upgrade** of a package seeds the cache silently; **subsequent** upgrades
+  compare and warn on mismatch, then update the cache.
+- The hook is a near-verbatim copy of yay's upstream `doc/examples/maintainer_change.lua`.
+- Requires yay ≥ v13 (the release that added the Lua hook system). It fires during
+  a full sysupgrade, which is why `update-all` upgrades the AUR via `yay -Sua`
+  rather than per-package `yay -S <pkg>`.
+- `yay` is a Linux-only stow package (in `LINUX_ONLY` in `bootstrap.sh`).
 
 ## Shell History (atuin)
 
