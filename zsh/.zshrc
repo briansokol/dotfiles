@@ -257,6 +257,12 @@ if [ -f "$HOME/Projects/google-cloud-sdk/path.zsh.inc" ]; then . "$HOME/Projects
 # The next line enables shell command completion for gcloud.
 if [ -f "$HOME/Projects/google-cloud-sdk/completion.zsh.inc" ]; then . "$HOME/Projects/google-cloud-sdk/completion.zsh.inc"; fi
 
+# Added by LM Studio CLI (lms)
+if [[ -d "$HOME/.lmstudio/bin" ]]; then
+  export PATH="$PATH:$HOME/.lmstudio/bin"
+fi
+# End of LM Studio CLI section
+
 # System info on new session
 if (( $+commands[fastfetch] )) && [[ $SHLVL -eq 1 ]]; then
   fastfetch --config neofetch
