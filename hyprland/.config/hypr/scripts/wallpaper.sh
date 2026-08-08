@@ -24,3 +24,6 @@ awww img "$pick" \
   --transition-duration 1.2 \
   --transition-fps 60
 echo "$pick" > "$STATE"
+
+mkdir -p "$HOME/.config/backgrounds"
+ln -sf "$pick" "$HOME/.config/backgrounds/current"
