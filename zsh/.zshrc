@@ -118,8 +118,15 @@ fi
 #export JAVA_HOME=$(/usr/libexec/java_home -v 11)
 #export PATH=$JAVA_HOME/bin:$PATH
 
+# A function, not an alias: alias arguments are appended after the whole
+# expansion, so `update-all -h` would pass -h to `exec zsh` instead of the
+# script. exec replaces this shell rather than re-sourcing .zshrc into an
+# already-initialised one, which would re-run compinit and re-register hooks.
+update-all() {
+  ~/.scripts/update-all-dependencies.sh "$@" && exec zsh
+}
+
 # General Aliases
-alias update-all='~/.scripts/update-all-dependencies.sh'
 alias bb='bbedit'
 alias npmlg='npm list -g --depth=0'
 
@@ -248,9 +255,6 @@ fi
 # Local environment overrides
 [[ -f "$HOME/.local_env" ]] && source "$HOME/.local_env"
 
-# opencode
-export PATH=/home/bsokol/.opencode/bin:$PATH
-
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f "$HOME/Projects/google-cloud-sdk/path.zsh.inc" ]; then . "$HOME/Projects/google-cloud-sdk/path.zsh.inc"; fi
 
@@ -258,7 +262,7 @@ if [ -f "$HOME/Projects/google-cloud-sdk/path.zsh.inc" ]; then . "$HOME/Projects
 if [ -f "$HOME/Projects/google-cloud-sdk/completion.zsh.inc" ]; then . "$HOME/Projects/google-cloud-sdk/completion.zsh.inc"; fi
 
 # Added by LM Studio CLI (lms)
-if [[ -d "$HOME/.lmstudio/bin" ]]; then
+if [[ -d "$HOME/.lmstudio/bin" && ! "$PATH" == *$HOME/.lmstudio/bin* ]]; then
   export PATH="$PATH:$HOME/.lmstudio/bin"
 fi
 # End of LM Studio CLI section

@@ -4,7 +4,7 @@
 set -o pipefail
 
 # Trap errors for better messaging (but allow specific commands to override)
-trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+trap 'err_report $?; exit 1' ERR
 
 # Color codes for output
 if [[ -t 1 ]]; then
@@ -22,6 +22,16 @@ else
     BOLD=''
     RESET=''
 fi
+
+# Called from the ERR trap. $LINENO inside a trap is 0 when the failure happened
+# inside a function, so report funcfiletrace instead: element 1 is the file:line
+# of the command that actually failed, the rest is the call chain to top level.
+err_report() {
+    echo "\n${BOLD}${RED}❌ Error: command failed with exit status $1${RESET}"
+    echo "   failed at  : ${funcfiletrace[1]:-unknown}"
+    echo "   call chain : ${(j:, :)funcfiletrace}"
+    echo "   func stack : ${(j:, :)funcstack}"
+}
 
 # Helper function to check if a command exists
 command_exists() {
@@ -113,8 +123,14 @@ reload_zshrc() {
         # Temporarily disable error trapping while sourcing
         trap - ERR
         source "$HOME/.zshrc" 2>/dev/null || true
+        # .zshrc registers interactive preexec/chpwd hooks (atuin, nvm auto-switch)
+        # and zsh still fires those in a non-interactive script. atuin's preexec
+        # hook returns 1 whenever ATUIN_PTY_PROXY_ACTIVE is unset, which would trip
+        # the ERR trap on the very next command after this function returns.
+        preexec_functions=()
+        chpwd_functions=()
         # Re-enable error trapping
-        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+        trap 'err_report $?; exit 1' ERR
         print_success "Shell configuration reloaded"
     fi
 }
@@ -139,7 +155,7 @@ if [ -s "${ZINIT_HOME}/zinit.zsh" ]; then
     source "${ZINIT_HOME}/zinit.zsh" 2>/dev/null || true
 fi
 # Re-enable error trapping
-trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+trap 'err_report $?; exit 1' ERR
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Parse command-line flags for selective package manager updates
@@ -237,7 +253,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
             print_skip "Git self-update check skipped"
             SKIPPED_ITEMS+=("Git self-update (directory not accessible)")
             # Re-enable error trapping
-            trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+            trap 'err_report $?; exit 1' ERR
         }
 
         # Verify we're in a git repository
@@ -246,7 +262,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
             print_skip "Git self-update check skipped"
             SKIPPED_ITEMS+=("Git self-update (not a git repo)")
             # Re-enable error trapping
-            trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+            trap 'err_report $?; exit 1' ERR
             cd "$ORIGINAL_DIR" 2>/dev/null || true
         else
             # Fetch latest changes from remote
@@ -257,7 +273,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                 print_info "Continuing with package updates..."
                 SKIPPED_ITEMS+=("Git self-update (fetch failed)")
                 # Re-enable error trapping
-                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                trap 'err_report $?; exit 1' ERR
                 cd "$ORIGINAL_DIR" 2>/dev/null || true
             else
                 # Determine main branch (main or master)
@@ -270,7 +286,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                     print_skip "Git self-update check skipped"
                     SKIPPED_ITEMS+=("Git self-update (no main branch found)")
                     # Re-enable error trapping
-                    trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                    trap 'err_report $?; exit 1' ERR
                     cd "$ORIGINAL_DIR" 2>/dev/null || true
                 fi
 
@@ -283,7 +299,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                         print_skip "Git self-update check skipped (not on main branch)"
                         SKIPPED_ITEMS+=("Git self-update (not on main branch)")
                         # Re-enable error trapping
-                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                        trap 'err_report $?; exit 1' ERR
                         cd "$ORIGINAL_DIR" 2>/dev/null || true
                     else
                         # Check if we're behind the remote
@@ -293,7 +309,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                             # No updates available, continue with script
                             print_success "Dotfiles are up-to-date with remote"
                             # Re-enable error trapping
-                            trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                            trap 'err_report $?; exit 1' ERR
                             cd "$ORIGINAL_DIR" 2>/dev/null || true
                         else
                             # Updates are available - check if repo is clean
@@ -330,7 +346,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                 print_info "Continuing with package updates..."
                                 SKIPPED_ITEMS+=("Git self-update (uncommitted changes)")
                                 # Re-enable error trapping
-                                trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                                trap 'err_report $?; exit 1' ERR
                                 cd "$ORIGINAL_DIR" 2>/dev/null || true
                             else
                                 # Repo is clean, check for unpushed local commits
@@ -341,7 +357,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                     print_info "Pulling latest changes..."
                                     if git pull --ff-only origin "$MAIN_BRANCH" 2>/dev/null; then
                                         # Re-enable error trapping
-                                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                                        trap 'err_report $?; exit 1' ERR
 
                                         print_success "Successfully pulled latest dotfiles changes"
                                         echo ""
@@ -351,7 +367,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                         print_info "Continuing with package updates..."
                                     else
                                         # Re-enable error trapping before exit
-                                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                                        trap 'err_report $?; exit 1' ERR
 
                                         print_warning "Failed to pull changes from remote"
                                         print_warning "This might indicate merge conflicts or other issues"
@@ -369,7 +385,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                     print_info "Using rebase to replay your commits on top of remote changes..."
                                     if git pull --rebase origin "$MAIN_BRANCH" 2>/dev/null; then
                                         # Re-enable error trapping
-                                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                                        trap 'err_report $?; exit 1' ERR
 
                                         print_success "Successfully rebased local commits on top of remote changes"
                                         echo ""
@@ -379,7 +395,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                         print_info "Continuing with package updates..."
                                     else
                                         # Re-enable error trapping before exit
-                                        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+                                        trap 'err_report $?; exit 1' ERR
 
                                         print_warning "Failed to rebase changes from remote"
                                         print_warning "This might indicate merge conflicts during rebase"
@@ -436,7 +452,7 @@ if [[ "$RUN_ZINIT" = true ]]; then
         zinit cclear
 
         # Re-enable error trapping
-        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+        trap 'err_report $?; exit 1' ERR
     else
         print_section "Zinit"
         print_skip "Zinit not found, skipping Zinit updates"
@@ -671,7 +687,7 @@ if [[ "$RUN_YAY" = true ]]; then
         yay -Sc --noconfirm 2>&1 | grep -v "could not open file.*download-" || true
 
         # Re-enable error trapping
-        trap 'echo "\n❌ Error occurred on line $LINENO. Exiting."; exit 1' ERR
+        trap 'err_report $?; exit 1' ERR
 
         print_success "Yay (AUR) processing complete"
     else
@@ -1059,8 +1075,9 @@ fi
 
 echo "\n${BOLD}${GREEN}All packages are up-to-date!${RESET}\n"
 
-# Reload shell configuration at the end
-reload_zshrc
+# No reload here: this script runs in its own process, so sourcing .zshrc could
+# not affect the caller's shell. The `update-all` function in .zshrc re-execs
+# the interactive shell instead.
 
 # Clean exit - disable error trapping and wait for any background processes
 trap - ERR
