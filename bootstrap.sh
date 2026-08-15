@@ -22,7 +22,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
 
 # Stow package sets. p10k is intentionally excluded (disabled in .zshrc).
-COMMON=(zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop)
+COMMON=(zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop herdr opencode)
 MACOS_ONLY=(aerospace sketchybar)
 LINUX_ONLY=(hyprland waybar swaync swayosd yay)
 
@@ -108,21 +108,61 @@ OS="$(detect_os)"
 # Prerequisites per platform
 # ---------------------------------------------------------------------------
 
+# Homebrew is "healthy" only if its Ruby layer loads. Neither `command -v brew`
+# nor the cheap probes (--prefix, --version, --cellar) are sufficient: brew.sh
+# answers those in shell without starting Ruby, so a Homebrew built for the
+# wrong CPU or an unsupported macOS release still passes them and then fails on
+# every real subcommand. `brew config` runs cmd/config.rb, so it fails exactly
+# when `brew install` would.
+brew_healthy() {
+    command_exists brew && brew config >/dev/null 2>&1
+}
+
+# Homebrew only puts itself on PATH via ~/.zprofile, which a non-login shell
+# never reads. Probe both standard prefixes directly and adopt the first healthy
+# one; /opt/homebrew (Apple Silicon) wins over /usr/local (Intel).
+# Ends in `return 1`, so only ever call this in a condition: a bare call would
+# abort the script under `set -e`.
+adopt_brew_prefix() {
+    local prefix
+    for prefix in /opt/homebrew /usr/local; do
+        [[ -x "$prefix/bin/brew" ]] || continue
+        # Probe before eval so a broken prefix never gets prepended to PATH.
+        "$prefix/bin/brew" config >/dev/null 2>&1 || continue
+        # `|| true` is required: a bare eval on malformed input returns 2.
+        eval "$("$prefix/bin/brew" shellenv)" || true
+        case ":$PATH:" in
+            *":$prefix/bin:"*) ;;
+            *) PATH="$prefix/bin:$prefix/sbin:$PATH"; export PATH ;;
+        esac
+        if brew_healthy; then
+            print_info "Using Homebrew at $prefix."
+            return 0
+        fi
+    done
+    return 1
+}
+
 ensure_prereqs_macos() {
     print_section "Prerequisites (macOS)"
-    if ! command_exists brew; then
+
+    if adopt_brew_prefix || brew_healthy; then
+        print_skip "Homebrew already installed."
+    else
+        if command_exists brew; then
+            print_warning "A 'brew' is on PATH but does not work — reinstalling Homebrew."
+        fi
         print_info "Installing Homebrew..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        # shellenv for current shell
-        if [[ -f "/opt/homebrew/bin/brew" ]]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-        elif [[ -f "/usr/local/bin/brew" ]]; then
-            eval "$(/usr/local/bin/brew shellenv)"
+        if adopt_brew_prefix || brew_healthy; then
+            print_success "Homebrew installed."
+        else
+            print_error "Homebrew install did not produce a working 'brew'."
+            print_error "Install it manually from https://brew.sh, then re-run this script."
+            exit 1
         fi
-        print_success "Homebrew installed."
-    else
-        print_skip "Homebrew already installed."
     fi
+
     brew install stow git
 }
 
@@ -145,6 +185,31 @@ ensure_prereqs_ubuntu() {
     print_section "Prerequisites (Ubuntu/Debian)"
     sudo apt-get update
     sudo apt-get install -y build-essential git stow curl ca-certificates
+}
+
+# git and stow are needed by the plugin-manager and stow phases. They normally
+# come from ensure_prereqs_*, which --no-packages skips entirely. Probe by
+# running each tool rather than with command_exists: on a Mac without Command
+# Line Tools, /usr/bin/git exists and satisfies `command -v` but exits non-zero
+# on every invocation.
+require_git_and_stow() {
+    local missing=""
+    git  --version >/dev/null 2>&1 || missing="git"
+    stow --version >/dev/null 2>&1 || missing="${missing:+$missing }stow"
+    [[ -z "$missing" ]] && return 0
+
+    print_error "Required tool(s) missing or not working: $missing"
+    if (( SKIP_PACKAGES == 1 )); then
+        print_error "--no-packages skips prerequisite installation. Re-run without it, or install manually:"
+    else
+        print_error "Package installation finished but did not provide them. Install manually, then re-run:"
+    fi
+    case "$OS" in
+        macos)  print_info "brew install $missing" ;;
+        arch)   print_info "sudo pacman -S --needed $missing" ;;
+        ubuntu) print_info "sudo apt-get install -y $missing" ;;
+    esac
+    exit 1
 }
 
 # ---------------------------------------------------------------------------
@@ -340,6 +405,8 @@ if (( PACKAGES_ONLY == 1 )); then
     print_section "Done (--packages-only)"
     exit 0
 fi
+
+require_git_and_stow
 
 print_section "Plugin managers"
 bootstrap_zinit
