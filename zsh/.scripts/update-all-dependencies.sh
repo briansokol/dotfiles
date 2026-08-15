@@ -116,23 +116,39 @@ install_missing_packages() {
     esac
 }
 
-# Helper function to reload zshrc
-reload_zshrc() {
-    if [[ -f "$HOME/.zshrc" ]]; then
-        print_info "Reloading .zshrc..."
-        # Temporarily disable error trapping while sourcing
-        trap - ERR
-        source "$HOME/.zshrc" 2>/dev/null || true
-        # .zshrc registers interactive preexec/chpwd hooks (atuin, nvm auto-switch)
-        # and zsh still fires those in a non-interactive script. atuin's preexec
-        # hook returns 1 whenever ATUIN_PTY_PROXY_ACTIVE is unset, which would trip
-        # the ERR trap on the very next command after this function returns.
-        preexec_functions=()
-        chpwd_functions=()
-        # Re-enable error trapping
-        trap 'err_report $?; exit 1' ERR
-        print_success "Shell configuration reloaded"
+# Helper function to stop the run when a pull brought in files that only take
+# effect after a reload/restart. Exits 0 so the `update-all` wrapper's
+# `&& exec zsh` still fires and re-execs the interactive shell.
+check_post_pull_changes() {
+    local pre_pull_head="$1"
+    local changed
+    local zshrc_changed=false
+    local script_changed=false
+
+    changed=$(git -C "$DOTFILES_DIR" diff --name-only "$pre_pull_head" HEAD 2>/dev/null || true)
+
+    if printf '%s\n' "$changed" | grep -qxF 'zsh/.zshrc'; then
+        zshrc_changed=true
     fi
+    if printf '%s\n' "$changed" | grep -qxF 'zsh/.scripts/update-all-dependencies.sh'; then
+        script_changed=true
+    fi
+
+    if [[ "$zshrc_changed" = false ]] && [[ "$script_changed" = false ]]; then
+        return 0
+    fi
+
+    if [[ "$zshrc_changed" = true ]]; then
+        print_warning ".zshrc changed in this update"
+        print_info "  Reload it: source ~/.zshrc  (update-all re-execs your shell automatically)"
+    fi
+    if [[ "$script_changed" = true ]]; then
+        print_warning "update-all-dependencies.sh changed in this update"
+        print_info "  Restart the update to run the new version: update-all"
+    fi
+    echo ""
+    print_info "Stopping before package updates."
+    exit 0
 }
 
 # Track what was updated
@@ -352,6 +368,10 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                 # Repo is clean, check for unpushed local commits
                                 COMMITS_AHEAD=$(git rev-list origin/$MAIN_BRANCH..HEAD --count 2>/dev/null || echo "0")
 
+                                # Recorded before the pull so the post-pull diff works for
+                                # both the fast-forward and the rebase path
+                                PRE_PULL_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
+
                                 if [[ "$COMMITS_AHEAD" -eq 0 ]]; then
                                     # No local commits, use fast-forward pull
                                     print_info "Pulling latest changes..."
@@ -362,8 +382,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                         print_success "Successfully pulled latest dotfiles changes"
                                         echo ""
                                         cd "$ORIGINAL_DIR" 2>/dev/null || true
-                                        reload_zshrc
-                                        echo ""
+                                        check_post_pull_changes "$PRE_PULL_HEAD"
                                         print_info "Continuing with package updates..."
                                     else
                                         # Re-enable error trapping before exit
@@ -390,8 +409,7 @@ if [[ "$RUN_GIT_CHECK" = true ]]; then
                                         print_success "Successfully rebased local commits on top of remote changes"
                                         echo ""
                                         cd "$ORIGINAL_DIR" 2>/dev/null || true
-                                        reload_zshrc
-                                        echo ""
+                                        check_post_pull_changes "$PRE_PULL_HEAD"
                                         print_info "Continuing with package updates..."
                                     else
                                         # Re-enable error trapping before exit

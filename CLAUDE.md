@@ -56,7 +56,7 @@ update-all --no-git-check       # Skip dotfiles repository update check
 because `sudo pacman -S --needed` / `sudo apt install` prompt for sudo every time.
 Run it explicitly when you've added entries to a manifest.
 
-**Important**: The script automatically checks for dotfiles updates before running package updates. If updates are found, it pulls them and exits (requiring shell restart).
+**Important**: The script automatically checks for dotfiles updates before running package updates. It always completes the pull first, then stops (exit 0) if the pull brought in changes to `zsh/.zshrc` or `zsh/.scripts/update-all-dependencies.sh`, printing one message per affected file. If neither changed, it continues straight into the package updates.
 
 ### Git Workflow Helpers
 ```bash
@@ -156,7 +156,7 @@ export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
 3. **Automatic Sync**: `update-all` checks for dotfiles updates before package updates
    - Uses fast-forward pull if no local commits
    - Uses rebase if local commits exist
-   - Exits early if updates found (shell restart required)
+   - Exits early (exit 0) only when the pull touched `.zshrc` or the update script itself
 
 ### Multi-Platform Support
 
@@ -199,7 +199,7 @@ The `.zshrc` includes a `chpwd` hook that automatically runs `nvm use` when:
 ### Update Script Intelligence
 
 **Key Behaviors** ([update-all-dependencies.sh](zsh/.scripts/update-all-dependencies.sh)):
-- **Git Self-Update**: Checks dotfiles repo first, pulls if behind, exits for shell restart
+- **Git Self-Update**: Checks dotfiles repo first and pulls if behind. After the pull it diffs the pre-pull commit against the new HEAD; if `zsh/.zshrc` changed it tells you to `source ~/.zshrc`, and if `zsh/.scripts/update-all-dependencies.sh` changed it tells you to re-run `update-all`. Either one stops the run before package updates. The exit status is 0 so the `update-all` wrapper's `&& exec zsh` still fires and re-execs the shell with the new `.zshrc`
 - **Separate Official/AUR Updates**: pacman always handles official-repo packages; yay handles AUR only, upgrading in a single `-Sua` sysupgrade while showing each PKGBUILD diff and prompting for review/approval natively. The sysupgrade fires yay's `UpgradeSelect` Lua hook, which warns when an AUR package's maintainer has changed (see "yay maintainer-change hook" below)
 - **NVM Multi-Version Updates**: Loops through all installed Node versions, updates global packages per version
 - **Default Packages**: Installs missing packages from `~/.nvm/default-packages`
