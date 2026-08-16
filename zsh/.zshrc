@@ -219,7 +219,7 @@ fi
 if (( $+commands[keychain] )); then
   _kc_keys=()
   for _kc_key in "$HOME"/.ssh/id_*(N); do
-    [[ -f "$_kc_key" ]] && _kc_keys+=("${_kc_key:t}")
+    [[ -f "$_kc_key" && "$_kc_key" != *.pub ]] && _kc_keys+=("${_kc_key:t}")
   done
   if (( ${#_kc_keys[@]} > 0 )); then
     eval "$(keychain --eval --quiet "${_kc_keys[@]}")"
