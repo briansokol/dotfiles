@@ -271,3 +271,5 @@ fi
 if (( $+commands[fastfetch] )) && [[ $SHLVL -eq 1 ]]; then
   fastfetch --config neofetch
 fi
+
+[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
