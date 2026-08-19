@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Claude Code status line — Catppuccin Mocha powerline style.
-# Reads session JSON on stdin, prints a single colored line.
+# Reads session JSON on stdin; prints path/branch on line 1, model + usage on line 2.
 # Requires a Nerd Font in your terminal.
 
 input=$(cat)
@@ -73,13 +73,18 @@ ICON_MODEL=$'󰍛'    # chip
 ICON_5H=$''     # clock
 ICON_7D=$''     # calendar
 ICON_CTX=$'󰆅'    # context window
+ICON_EFFORT=$'󰓅'  # speedometer
+ICON_DIFF=$''     # diff
 ICON_COST=$''   # dollar
 
 # Extract all fields in one jq pass (unit separator handles empties)
-IFS=$'\x1f' read -r DIR MODEL FIVE_H SEVEN_D CTX COST < <(
+IFS=$'\x1f' read -r DIR MODEL EFFORT ADDED REMOVED FIVE_H SEVEN_D CTX COST < <(
   echo "$input" | jq -r '[
     (.workspace.current_dir // .cwd // ""),
     (.model.display_name // .model // ""),
+    (.effort.level // ""),
+    (.cost.total_lines_added // ""),
+    (.cost.total_lines_removed // ""),
     (.rate_limits.five_hour.used_percentage // ""),
     (.rate_limits.seven_day.used_percentage // ""),
     (.context_window.used_percentage // ""),
@@ -107,30 +112,45 @@ pct_color() {
   fi
 }
 
-LINE=""
+LINE1=""
 LAST_FG=""
 
-# Append a segment; uses left cap on the first segment, powerline arrow otherwise.
+# Append a segment to line 1; left cap on the first segment, powerline arrow otherwise.
 append_segment() {
   local bg="$1" fg="$2" content="$3"
   if [ -z "$LAST_FG" ]; then
-    LINE="${RESET}${fg}${CAP_L}${bg}${FG_BASE}${BOLD}${content}"
+    LINE1="${RESET}${fg}${CAP_L}${bg}${FG_BASE}${BOLD}${content}"
   else
-    LINE="${LINE}${LAST_FG}${bg}${SEP}${FG_BASE}${BOLD} ${content}"
+    LINE1="${LINE1}${LAST_FG}${bg}${SEP}${FG_BASE}${BOLD} ${content}"
   fi
   LAST_FG="$fg"
 }
 
+LINE2=""
+
+# Append a segment to line 2: transparent background, segment color as text color.
+append_plain() {
+  local fg="$1" content="$2"
+  [ -n "$LINE2" ] && LINE2="${LINE2}  "
+  LINE2="${LINE2}${RESET}${fg}${BOLD}${content}${RESET}"
+}
+
 [ -n "$DIR_NAME"   ] && append_segment "$BG_BLUE"     "$FG_BLUE"     "${ICON_DIR} ${DIR_NAME}"
 [ -n "$GIT_BRANCH" ] && append_segment "$BG_SAPPHIRE" "$FG_SAPPHIRE" "${ICON_BRANCH} ${GIT_BRANCH}"
-[ -n "$MODEL"      ] && append_segment "$BG_MAUVE"    "$FG_MAUVE"    "${ICON_MODEL} ${MODEL}"
+
+[ -n "$MODEL"  ] && append_plain "$FG_MAUVE"    "${ICON_MODEL} ${MODEL}"
+[ -n "$EFFORT" ] && append_plain "$FG_LAVENDER" "${ICON_EFFORT} ${EFFORT}"
+
+if [ "${ADDED:-0}" -gt 0 ] 2>/dev/null || [ "${REMOVED:-0}" -gt 0 ] 2>/dev/null; then
+  append_plain "$FG_GREEN" "${ICON_DIFF} +${ADDED:-0}${FG_RED} -${REMOVED:-0}"
+fi
 
 add_pct() {
   local icon="$1" pct="$2"
   [ -z "$pct" ] && return
   local n; n=$(printf '%.0f' "$pct" 2>/dev/null) || n=0
   IFS='|' read -r bg fg <<<"$(pct_color "$pct")"
-  append_segment "$bg" "$fg" "${icon} ${n}%"
+  append_plain "$fg" "${icon} ${n}%"
 }
 
 add_pct "$ICON_CTX" "$CTX"
@@ -139,10 +159,11 @@ add_pct "$ICON_7D"  "$SEVEN_D"
 
 if [ -n "$COST" ] && awk -v c="$COST" 'BEGIN { exit !(c+0 > 0) }'; then
   COST_FMT=$(awk -v c="$COST" 'BEGIN { printf "%.4f", c+0 }')
-  append_segment "$BG_TEAL" "$FG_TEAL" "${ICON_COST} ${COST_FMT}"
+  append_plain "$FG_TEAL" "${ICON_COST} ${COST_FMT}"
 fi
 
-# Right rounded cap
-[ -n "$LAST_FG" ] && LINE="${LINE}${RESET}${LAST_FG}${CAP_R}${RESET}"
+# Right rounded cap on line 1
+[ -n "$LAST_FG" ] && LINE1="${LINE1}${RESET}${LAST_FG}${CAP_R}${RESET}"
 
-printf '%b\n' "$LINE"
+[ -n "$LINE1" ] && printf '%b\n' "$LINE1"
+[ -n "$LINE2" ] && printf '%b\n' "$LINE2"
