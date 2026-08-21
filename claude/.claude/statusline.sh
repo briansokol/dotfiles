@@ -138,12 +138,12 @@ append_plain() {
 [ -n "$DIR_NAME"   ] && append_segment "$BG_BLUE"     "$FG_BLUE"     "${ICON_DIR} ${DIR_NAME}"
 [ -n "$GIT_BRANCH" ] && append_segment "$BG_SAPPHIRE" "$FG_SAPPHIRE" "${ICON_BRANCH} ${GIT_BRANCH}"
 
+if [ "${ADDED:-0}" -gt 0 ] 2>/dev/null || [ "${REMOVED:-0}" -gt 0 ] 2>/dev/null; then
+  append_segment "$BG_GREEN" "$FG_GREEN" "${ICON_DIFF} +${ADDED:-0} -${REMOVED:-0}"
+fi
+
 [ -n "$MODEL"  ] && append_plain "$FG_MAUVE"    "${ICON_MODEL} ${MODEL}"
 [ -n "$EFFORT" ] && append_plain "$FG_LAVENDER" "${ICON_EFFORT} ${EFFORT}"
-
-if [ "${ADDED:-0}" -gt 0 ] 2>/dev/null || [ "${REMOVED:-0}" -gt 0 ] 2>/dev/null; then
-  append_plain "$FG_GREEN" "${ICON_DIFF} +${ADDED:-0}${FG_RED} -${REMOVED:-0}"
-fi
 
 add_pct() {
   local icon="$1" pct="$2"
