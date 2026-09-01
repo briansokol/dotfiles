@@ -56,9 +56,21 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## 5. Writing Style
+## 5. Serena Tools
 
-**Use standard punctuation. No em dashes.**
+**When the Serena MCP server is available, its symbol-aware tools are primary for code files. Read/Glob/Grep/Edit are secondary.**
 
-- Never use the em dash (—) in any written output, including responses, commit messages, comments, and documentation.
-- Use a comma, colon, semicolon, or parentheses instead, whichever best fits the sentence.
+Call `initial_instructions` before starting a coding task.
+
+Before editing code:
+1. `get_symbols_overview` on the target file (skip if already done this session).
+2. `find_symbol` with `include_body=true` for only the symbols you'll touch, not the whole file.
+3. Edit with `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`, or `replace_content`.
+
+Built-in tools are still correct for:
+- Non-code files: markdown, JSON, YAML, TOML, config, lockfiles, plain text, images.
+- Regex search across many files as a discovery step - but read/edit the matched code files through Serena.
+- Reading a few lines where a symbolic read is overkill.
+- Anything Serena has already been tried on and failed, or files that don't parse as code.
+
+Don't rationalize past this with "the file is small", "the path is known", or "one call versus three".
