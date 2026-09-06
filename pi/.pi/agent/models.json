@@ -1,0 +1,36 @@
+{
+  "providers": {
+    "firefly": {
+      "baseUrl": "http://firefly.taild9c345.ts.net:11434/v1",
+      "api": "openai-completions",
+      "apiKey": "ollama",
+      "models": [
+        {
+          "id": "qwen3.8:27b-160k",
+          "name": "Qwen3.8 27B (firefly)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 163840,
+          "maxTokens": 32768,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+        }
+      ]
+    },
+    "ollama": {
+      "baseUrl": "http://localhost:11434/v1",
+      "api": "openai-completions",
+      "apiKey": "ollama",
+      "models": [
+        {
+          "id": "qwen3.6:35b-a3b-coding",
+          "name": "Qwen3.6 35B-A3B Coding (local)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 32768,
+          "maxTokens": 8192,
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 }
+        }
+      ]
+    }
+  }
+}

@@ -22,7 +22,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
 
 # Stow package sets. p10k is intentionally excluded (disabled in .zshrc).
-COMMON=(zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop herdr opencode)
+COMMON=(zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop herdr opencode pi)
 MACOS_ONLY=(aerospace sketchybar)
 LINUX_ONLY=(hyprland waybar swaync swayosd yay)
 

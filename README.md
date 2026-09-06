@@ -50,7 +50,7 @@ stow --delete <package>
 
 ## Packages
 
-Cross-platform (always stowed): `zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop`
+Cross-platform (always stowed): `zsh nvim tmux starship nvm micro ghostty yazi rofi claude git atuin bat lazygit btop pi`
 
 macOS only: `iterm aerospace sketchybar`
 
