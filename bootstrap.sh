@@ -383,6 +383,20 @@ post_stow() {
             print_skip "atuin already has history ($count entries)."
         fi
     fi
+
+    # Point pi at the stowed Catppuccin Mocha theme (settings.json stays a
+    # local file; pi keeps auth.json / models-store.json outside the repo)
+    if [[ -f "$REPO_DIR/pi/.pi/agent/themes/catppuccin-mocha.json" ]]; then
+        local pi_settings="$HOME/.pi/agent/settings.json"
+        mkdir -p "$HOME/.pi/agent"
+        [[ -f "$pi_settings" ]] || echo '{}' > "$pi_settings"
+        if jq '.theme != "catppuccin-mocha"' "$pi_settings" 2>/dev/null | grep -q true; then
+            jq '.theme = "catppuccin-mocha"' "$pi_settings" > "$pi_settings.tmp" && mv "$pi_settings.tmp" "$pi_settings"
+            print_success "pi theme set to catppuccin-mocha."
+        else
+            print_skip "pi theme already catppuccin-mocha."
+        fi
+    fi
 }
 
 # ---------------------------------------------------------------------------

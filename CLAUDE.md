@@ -292,11 +292,37 @@ machine. The encryption key is not checked into this repo.
 
 ## pi agent models
 
-The `pi/` stow package ships a single file, [pi/.pi/agent/models.json](pi/.pi/agent/models.json).
+The `pi/` stow package ships two files: [pi/.pi/agent/models.json](pi/.pi/agent/models.json) and the
+Catppuccin Mocha theme at [pi/.pi/agent/themes/catppuccin-mocha.json](pi/.pi/agent/themes/catppuccin-mocha.json).
 Note that pi is **not** XDG-compliant — its config lives at `~/.pi/agent/`, so the package is
 `pi/.pi/agent/` rather than `pi/.config/`. That directory also holds `auth.json`,
-`models-store.json`, and `settings.json`; `stow --no-folding` symlinks only `models.json` and
-leaves those as real local files, keeping credentials out of the repo.
+`models-store.json`, and `settings.json`; `stow --no-folding` symlinks only the theme and
+`models.json`, leaving those as real local files, keeping credentials out of the repo.
+
+The theme is auto-selected by `bootstrap.sh` (post-stow: sets `"theme": "catppuccin-mocha"`
+in `~/.pi/agent/settings.json` when the stowed theme file is present). On an existing machine
+you can also select it manually via `/settings`.
+
+### Footer extension (Catppuccin powerline status area)
+
+`pi/.pi/agent/extensions/catppuccin-footer/index.ts` replaces pi's two-line footer with the
+Catppuccin Mocha palette from the Claude statusline (`claude/.claude/statusline.sh`), keeping
+pi's native element positions:
+
+- **Line 1** (powerline segments, solid BG): working dir (blue BG, base FG), git branch
+  (sapphire BG, base FG, from pi's `getGitBranch()`). Session name appended if set.
+- **Line 2** (color FG, transparent BG): `↑in ↓out RcacheR WcacheW CH% $cost ctx%/window`
+  in subtext1 (context part colored green/yellow/peach at <50/<80/≥80, same thresholds as
+  the Claude statusline), model name right-aligned in mauve.
+
+It is **on by default**: `session_start`/`turn_start` reinstall it, and `/footer` toggles it
+off (restores the default footer). The branch uses pi's `.git` watcher via
+`footerData.onBranchChange` and re-renders on changes. Requires a Nerd Font.
+
+`turn_start` re-runs `setFooter` each turn (replacing the component — `dispose()` on the
+old one unwatches). The usage totals are computed from `ctx.sessionManager.getEntries()`
+the same way the built-in footer does (messages + tool results); cost is `0.000` for
+self-hosted Ollama models and hidden in that case.
 
 Two providers, both reaching Ollama through its OpenAI-compatible `/v1` endpoint
 (`api: openai-completions`, with a dummy `apiKey` that Ollama ignores but pi's schema requires):
@@ -315,6 +341,37 @@ ollama pull qwen3.6:35b-a3b-coding
 `qwen3.6:35b-a3b-coding` shares its weights with `qwen3.6:35b-a3b` (same `parent_model`, same
 blobs) and differs only in sampling preset — `temperature` 0.6 and `presence_penalty` 0, versus
 1 and 1.5 on the base. Pulling it alongside the base costs no meaningful extra disk.
+
+### Subagents (pi-subagents extension)
+
+Subagent support comes from the `pi-subagents` package (by nicobailon) installed from the pi marketplace
+into user settings (`~/.pi/agent/settings.json`):
+
+```bash
+pi install npm:pi-subagents
+```
+
+Subagents default to the local Ollama model via user settings (not in the repo — `settings.json` is
+intentionally untracked alongside `auth.json`):
+
+```json
+{
+  "subagents": {
+    "defaultModel": "ollama/qwen3.6:35b-a3b-coding",
+    "agentOverrides": {
+      "researcher": { "model": "firefly/qwen3.8:27b-160k" },
+      "oracle": { "model": "firefly/qwen3.8:27b-160k" }
+    }
+  }
+}
+```
+
+Everything runs on the local Qwen 3.6 model except `researcher` and `oracle`, which run on the
+larger firefly Qwen 3.8 model. The override beats frontmatter but loses to per-run
+`[model=...]` overrides. Use `/subagents-doctor`
+to verify setup. On a fresh machine the sequence is: pull the model (`ollama pull ...`), stow pi,
+stow the theme, `pi install npm:pi-subagents`, then add the `subagents` block to
+`~/.pi/agent/settings.json`.
 
 ### Gotchas
 
