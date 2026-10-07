@@ -39,4 +39,5 @@ brew "FelixKratz/formulae/sketchybar"
 
 # Fonts
 cask "font-monaspace-nerd-font"
+cask "font-jetbrains-mono-nerd-font"
 cask "font-sf-pro"

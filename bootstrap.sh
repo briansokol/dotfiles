@@ -263,6 +263,20 @@ install_packages_ubuntu() {
         print_info "Installing atuin from upstream..."
         curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
     fi
+    if ! fc-list 2>/dev/null | grep -qi "JetBrainsMono Nerd Font"; then
+        print_info "Installing JetBrainsMono Nerd Font from upstream..."
+        local font_dir="$HOME/.local/share/fonts/JetBrainsMonoNF" font_tmp
+        font_tmp="$(mktemp -d)"
+        if curl -fsSL -o "$font_tmp/JetBrainsMono.tar.xz" \
+            https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz \
+            && mkdir -p "$font_dir" && tar -xf "$font_tmp/JetBrainsMono.tar.xz" -C "$font_dir"; then
+            fc-cache -f "$font_dir"
+            print_success "Installed JetBrainsMono Nerd Font."
+        else
+            print_warning "JetBrainsMono Nerd Font download failed — install manually from https://www.nerdfonts.com/font-downloads"
+        fi
+        rm -rf "$font_tmp"
+    fi
     if ! command_exists lazygit; then
         print_warning "lazygit not found and not in apt — install manually from https://github.com/jesseduffield/lazygit/releases"
     fi

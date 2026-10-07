@@ -55,3 +55,4 @@ dolphin
 # Fonts
 ttf-monaspace
 ttf-sourcecodepro-nerd
+ttf-jetbrains-mono-nerd
