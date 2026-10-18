@@ -4,3 +4,4 @@
 swayosd-git
 rofimoji
 catppuccin-cursors-mocha
+pi-coding-agent-bin
