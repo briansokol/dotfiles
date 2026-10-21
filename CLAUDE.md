@@ -300,9 +300,13 @@ Note that pi is **not** XDG-compliant — its config lives at `~/.pi/agent/`, so
 `models-store.json`, and `settings.json`; `stow --no-folding` symlinks only the theme and
 `models.json`, leaving those as real local files, keeping credentials out of the repo.
 
-The theme is auto-selected by `bootstrap.sh` (post-stow: sets `"theme": "catppuccin-mocha"`
-in `~/.pi/agent/settings.json` when the stowed theme file is present). On an existing machine
-you can also select it manually via `/settings`.
+The theme and thinking-block visibility are auto-selected by `bootstrap.sh` (post-stow: sets
+`"theme": "catppuccin-mocha"` and `"hideThinkingBlock": true` in `~/.pi/agent/settings.json`
+when the stowed theme file is present). On an existing machine you can also select them
+manually via `/settings`. `hideThinkingBlock` hides reasoning text behind a collapsed
+"Thinking..." label (toggle with `Ctrl+T`, or click the label in fullscreen mode) so the
+streaming spinner stays as the only visible activity while the model thinks; tool calls
+still render normally.
 
 ### Footer extension (Catppuccin powerline status area)
 
@@ -425,16 +429,3 @@ To exceed the default for a local model, prefer a derived Modelfile tag
 (`FROM <base>` + `PARAMETER num_ctx <n>`, which inherits the base template, renderer, parser,
 and sampling params) over raising `OLLAMA_CONTEXT_LENGTH` globally — the global setting applies
 the same large KV cache to every model on the machine.
-
-### Sizing the KV cache (iGPU)
-
-This machine is a Radeon 890M with no dedicated VRAM — it borrows system RAM through GTT,
-capped at 46 GiB (`/sys/class/drm/card*/device/mem_info_gtt_total`). The KV cache comes out of
-that ceiling, so context size is bounded by GTT, not by what the model declares:
-
-    KV bytes/token = 2 (K+V) x layers x kv_heads x head_dim x 2 (f16)
-
-For `qwen3.6:35b-a3b*` (41 layers, 2 KV heads, 256 head dim) that is ~82 KiB/token, so the 22 GB
-model needs ~2.7 GB of KV at 32768 and would need ~11 GB at 131072. Models with more KV heads
-are far more expensive per token; check `block_count` / `head_count_kv` / `key_length` via
-`/api/show` before raising a context window.

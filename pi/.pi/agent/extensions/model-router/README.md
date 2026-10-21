@@ -62,11 +62,11 @@ The Catppuccin footer displays `auto → provider/model`. The standard footer di
 
 Optional file: **`~/.pi/agent/model-router.json`** (or the agent directory selected by Pi). Do not commit credentials there. Copy/edit `config.example.json`, then `/router reload`. Unknown fields and malformed settings fail closed. Missing configuration uses `config.ts` defaults; arrays replace defaults.
 
-Model lists are ordered preferences, not performance rankings. Adjust them after measuring your workloads. Default private candidates are Ollama Qwen 3.6, Strata Qwen 3.8 Flash, then Firefly Qwen 3.8. Default hosted lists contain curated OpenAI IDs from the current catalog; unavailable IDs are skipped. Both hosted tiers may be empty to disable hosted candidates globally.
+Model lists are ordered preferences, not performance rankings. Adjust them after measuring your workloads. Default private candidates are Firefly Laguna XS 2.1 128k, Ollama Qwen 3.6, then Firefly Qwen 3.8. Default hosted lists contain curated OpenAI IDs from the current catalog; unavailable IDs are skipped. Both hosted tiers may be empty to disable hosted candidates globally.
 
 Resource groups prevent treating aliases/shared hardware as independent failover. Loopback hosts and the current machine's hostname (including its Tailscale FQDN) automatically share `private:local-machine`. For other aliases/shared machines, configure provider-to-group mappings explicitly. All OpenAI subscription candidates share one quota/resource group. Groups affect retry exclusion, **not scheduling or memory management**; the router does not load/unload models or prevent concurrent processes from competing for GPU memory.
 
-Context limits and capabilities come from `models.json`/Pi's catalog. Verify actual allocation with `ollama ps` and your Strata server. Token estimation is conservative but not an exact tokenizer; Pi remains responsible for real context overflow recovery. Image estimates use 4096 tokens per image and may differ from actual provider accounting.
+Context limits and capabilities come from `models.json`/Pi's catalog. Verify actual allocation with `ollama ps` and your local server. Token estimation is conservative but not an exact tokenizer; Pi remains responsible for real context overflow recovery. Image estimates use 4096 tokens per image and may differ from actual provider accounting.
 
 ### Optional local model-assisted assessment
 

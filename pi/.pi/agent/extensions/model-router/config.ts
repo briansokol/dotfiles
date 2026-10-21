@@ -13,8 +13,8 @@ export interface RouterConfig {
 
 export const defaults: RouterConfig = {
 	privateModels: [
+		"firefly/laguna-xs-2.1:128k",
 		"ollama/qwen3.6:35b-a3b-coding",
-		"strata/qwen3.8-flash-next-coder-iq1_m",
 		"firefly/qwen3.8:27b-160k",
 	],
 	hostedModels: ["openai/gpt-6-luna", "openai/gpt-5.6-luna", "openai/gpt-5.4-mini"],

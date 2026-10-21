@@ -1,0 +1,9 @@
+# Build on the Ollama host (firefly):
+#   ollama pull laguna-xs-2.1
+#   ollama create laguna-xs-2.1:128k -f packages/ollama/laguna-xs-2.1-128k.Modelfile
+# Inherit template, tool parser, and sampling defaults from the base model.
+# Pin the runtime context to match pi's 131072-token contextWindow.
+# Verified on firefly's RTX 3090 with Flash Attention and q4_0 KV cache.
+# Memory requirements depend on server cache type and parallelism settings.
+FROM laguna-xs-2.1
+PARAMETER num_ctx 131072
