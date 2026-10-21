@@ -1,0 +1,23 @@
+{
+  "privateModels": [
+    "ollama/qwen3.6:35b-a3b-coding",
+    "strata/qwen3.8-flash-next-coder-iq1_m",
+    "firefly/qwen3.8:27b-160k"
+  ],
+  "hostedModels": [
+    "openai/gpt-6-luna",
+    "openai/gpt-5.6-luna",
+    "openai/gpt-5.4-mini"
+  ],
+  "deepModels": [
+    "openai/gpt-6.1-sol",
+    "openai/gpt-6-sol",
+    "openai/gpt-5.6-sol",
+    "openai/gpt-5.4"
+  ],
+  "resourceGroups": {},
+  "probeTimeoutMs": 1500,
+  "probeCacheMs": 30000,
+  "toolErrorThreshold": 3,
+  "classifierTimeoutMs": 2000
+}

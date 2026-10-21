@@ -292,8 +292,9 @@ machine. The encryption key is not checked into this repo.
 
 ## pi agent models
 
-The `pi/` stow package ships two files: [pi/.pi/agent/models.json](pi/.pi/agent/models.json) and the
-Catppuccin Mocha theme at [pi/.pi/agent/themes/catppuccin-mocha.json](pi/.pi/agent/themes/catppuccin-mocha.json).
+The `pi/` stow package ships [pi/.pi/agent/models.json](pi/.pi/agent/models.json), extensions under
+`pi/.pi/agent/extensions/`, and the Catppuccin Mocha theme at
+[pi/.pi/agent/themes/catppuccin-mocha.json](pi/.pi/agent/themes/catppuccin-mocha.json).
 Note that pi is **not** XDG-compliant — its config lives at `~/.pi/agent/`, so the package is
 `pi/.pi/agent/` rather than `pi/.config/`. That directory also holds `auth.json`,
 `models-store.json`, and `settings.json`; `stow --no-folding` symlinks only the theme and
@@ -372,6 +373,28 @@ larger firefly Qwen 3.8 model. The override beats frontmatter but loses to per-r
 to verify setup. On a fresh machine the sequence is: pull the model (`ollama pull ...`), stow pi,
 stow the theme, `pi install npm:pi-subagents`, then add the `subagents` block to
 `~/.pi/agent/settings.json`.
+
+### Local-first model router
+
+`pi/.pi/agent/extensions/model-router/index.ts` registers the virtual model `router/auto`
+(Pi 1.3.0+). Select it with `/router auto` or `/model`. It prefers configured private models,
+uses task heuristics (optionally a local classifier), and automatically escalates complex work
+or repeated tool errors to OpenAI **subscription OAuth** models. It does not fall back to
+OpenAI API-key billing. `/router local-only` forbids hosted requests; controls follow the
+active session branch. The Catppuccin footer shows the physical routed model.
+
+Machine-local overrides live in `~/.pi/agent/model-router.json` (not tracked). The extension's
+[README](pi/.pi/agent/extensions/model-router/README.md) documents policies, limitations, and
+`config.example.json`. Private candidate order is configurable; resource groups prevent
+retrying aliases on the same failed machine. Routing does not manage GPU memory or scheduling.
+Automatic hosted routing may send prior file contents/history to OpenAI. Subagents do not
+inherit the parent's privacy controls automatically.
+
+Tests (no inference):
+
+```bash
+node --experimental-strip-types --test pi/.pi/agent/extensions/model-router/tests/policy.test.ts
+```
 
 ### Gotchas
 
