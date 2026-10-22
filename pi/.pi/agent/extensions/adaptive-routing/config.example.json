@@ -1,0 +1,110 @@
+{
+  "mode": "auto",
+  "routerModels": [
+    "ollama/qwen3:4b-instruct-8k"
+  ],
+  "models": {
+    "excluded": [
+      "openai/gpt-4",
+      "openai/gpt-4-turbo",
+      "openai/gpt-4.1",
+      "openai/gpt-4.1-mini",
+      "openai/gpt-4.1-nano",
+      "openai/gpt-4o",
+      "openai/gpt-4o-2024-05-13",
+      "openai/gpt-4o-2024-08-06",
+      "openai/gpt-4o-2024-11-20",
+      "openai/gpt-4o-mini",
+      "openai/gpt-5",
+      "openai/gpt-5-chat-latest",
+      "openai/gpt-5-mini",
+      "openai/gpt-5-nano",
+      "openai/gpt-5-pro",
+      "openai/gpt-5.1",
+      "openai/gpt-5.2",
+      "openai/gpt-5.2-pro",
+      "openai/gpt-5.3-codex",
+      "openai/gpt-5.3-codex-spark",
+      "openai/gpt-5.4",
+      "openai/gpt-5.4-mini",
+      "openai/gpt-5.4-nano",
+      "openai/gpt-5.4-pro",
+      "openai/gpt-5.5",
+      "openai/gpt-5.5-pro",
+      "openai/gpt-5.6-luna",
+      "openai/gpt-5.6-sol",
+      "openai/gpt-6-astra",
+      "openai/gpt-6-luna",
+      "openai/gpt-6-sol",
+      "openai/gpt-daybreak-blue-latest",
+      "openai/gpt-daybreak-red-latest",
+      "openai/gpt-realtime-2.1",
+      "openai/o1",
+      "openai/o1-pro",
+      "openai/o3",
+      "openai/o3-mini",
+      "openai/o3-pro",
+      "openai/o4-mini"
+    ]
+  },
+  "intents": {
+    "quick-qna": {
+      "preferredModels": [
+        "ollama/ornith-1.5:35b-64k"
+      ]
+    },
+    "implementation": {
+      "preferredModels": [
+        "ollama/ornith-1.5:35b-64k"
+      ]
+    },
+    "refactor": {
+      "preferredModels": [
+        "ollama/ornith-1.5:35b-64k"
+      ]
+    },
+    "planning": {
+      "preferredModels": [
+        "ollama/ornith-1.5:35b-64k"
+      ]
+    },
+    "research": {
+      "preferredModels": [
+        "firefly/qwen3.8:27b-160k"
+      ]
+    },
+    "review": {
+      "preferredModels": [
+        "firefly/qwen3.8:27b-160k"
+      ]
+    },
+    "debugging": {
+      "preferredModels": [
+        "openai/gpt-5.6-terra"
+      ]
+    },
+    "design": {
+      "preferredModels": [
+        "openai/gpt-5.6-terra"
+      ],
+      "preferredProviders": [
+        "openai"
+      ]
+    },
+    "architecture": {
+      "preferredModels": [
+        "openai/gpt-6.1-sol"
+      ],
+      "preferredProviders": [
+        "openai"
+      ],
+      "defaultThinking": "high"
+    },
+    "autonomous": {
+      "preferredModels": [
+        "openai/gpt-6.1-sol"
+      ],
+      "defaultThinking": "high"
+    }
+  }
+}

@@ -292,13 +292,17 @@ machine. The encryption key is not checked into this repo.
 
 ## pi agent models
 
-The `pi/` stow package ships [pi/.pi/agent/models.json](pi/.pi/agent/models.json), extensions under
-`pi/.pi/agent/extensions/`, and the Catppuccin Mocha theme at
+The `pi/` stow package ships [pi/.pi/agent/models.example.json](pi/.pi/agent/models.example.json),
+extensions under `pi/.pi/agent/extensions/`, and the Catppuccin Mocha theme at
 [pi/.pi/agent/themes/catppuccin-mocha.json](pi/.pi/agent/themes/catppuccin-mocha.json).
 Note that pi is **not** XDG-compliant — its config lives at `~/.pi/agent/`, so the package is
 `pi/.pi/agent/` rather than `pi/.config/`. That directory also holds `auth.json`,
-`models-store.json`, and `settings.json`; `stow --no-folding` symlinks only the theme and
-`models.json`, leaving those as real local files, keeping credentials out of the repo.
+`models-store.json`, and `settings.json`; `stow --no-folding` symlinks only the theme, extensions,
+and example files, leaving those as real local files, keeping credentials out of the repo.
+
+`models.json` is **machine-local** (untracked) because which models are pulled differs per
+machine. `bootstrap.sh` seeds `~/.pi/agent/models.json` from `models.example.json` when it is
+missing (or is a leftover symlink from when it was stowed); after that, edit the local copy.
 
 The theme and thinking-block visibility are auto-selected by `bootstrap.sh` (post-stow: sets
 `"theme": "catppuccin-mocha"` and `"hideThinkingBlock": true` in `~/.pi/agent/settings.json`
@@ -329,23 +333,30 @@ old one unwatches). The usage totals are computed from `ctx.sessionManager.getEn
 the same way the built-in footer does (messages + tool results); cost is `0.000` for
 self-hosted Ollama models and hidden in that case.
 
-Two providers, both reaching Ollama through its OpenAI-compatible `/v1` endpoint
-(`api: openai-completions`, with a dummy `apiKey` that Ollama ignores but pi's schema requires):
+The example declares two providers, both reaching Ollama through its OpenAI-compatible `/v1`
+endpoint (`api: openai-completions`, with a dummy `apiKey` that Ollama ignores but pi's schema
+requires):
 
 | Provider | Model | Context | Max output | Host |
 |----------|-------|---------|-----------|------|
 | `firefly` | `qwen3.8:27b-160k` | 163840 | 32768 | `firefly.taild9c345.ts.net:11434` (Tailscale) |
-| `ollama` | `qwen3.6:35b-a3b-coding` | 32768 | 8192 | `localhost:11434` |
+| `ollama` | `ornith-1.5:35b-64k` | 65536 | 16384 | `localhost:11434` (agentic coding, 35B-A3B MoE) |
+| `ollama` | `qwen3:4b-instruct-8k` | 8192 | 2048 | `localhost:11434` (router classifier, non-thinking) |
 
-On a fresh machine the local model is just a pull — there is no build step:
+On a fresh machine, pull the bases and build the pinned-context tags:
 
 ```bash
-ollama pull qwen3.6:35b-a3b-coding
+ollama pull ornith-1.5:35b && ollama create ornith-1.5:35b-64k -f packages/ollama/ornith-1.5-35b-64k.Modelfile
+ollama pull qwen3:4b-instruct && ollama create qwen3:4b-instruct-8k -f packages/ollama/qwen3-4b-instruct-8k.Modelfile
 ```
 
-`qwen3.6:35b-a3b-coding` shares its weights with `qwen3.6:35b-a3b` (same `parent_model`, same
-blobs) and differs only in sampling preset — `temperature` 0.6 and `presence_penalty` 0, versus
-1 and 1.5 on the base. Pulling it alongside the base costs no meaningful extra disk.
+Both are pinned because Ollama's default context gave 131072 on a 36 GB Mac (Ollama 0.40.8).
+At that size the 4B classifier alone took 22 GB and evicted Ornith on every prompt. Pinned, they
+stay resident together (22 GB + 3.9 GB, 100% GPU).
+
+OpenAI subscription models are built into pi; log in with `/login` in pi (ChatGPT OAuth) to make
+them available. They appear under the `openai` provider (`openai/*`), and the OAuth credential is
+stored in `auth.json`.
 
 ### Subagents (pi-subagents extension)
 
@@ -362,7 +373,7 @@ intentionally untracked alongside `auth.json`):
 ```json
 {
   "subagents": {
-    "defaultModel": "ollama/qwen3.6:35b-a3b-coding",
+    "defaultModel": "ollama/ornith-1.5:35b-64k",
     "agentOverrides": {
       "researcher": { "model": "firefly/qwen3.8:27b-160k" },
       "oracle": { "model": "firefly/qwen3.8:27b-160k" }
@@ -371,34 +382,51 @@ intentionally untracked alongside `auth.json`):
 }
 ```
 
-Everything runs on the local Qwen 3.6 model except `researcher` and `oracle`, which run on the
+Everything runs on the local Ornith model except `researcher` and `oracle`, which run on the
 larger firefly Qwen 3.8 model. The override beats frontmatter but loses to per-run
 `[model=...]` overrides. Use `/subagents-doctor`
 to verify setup. On a fresh machine the sequence is: pull the model (`ollama pull ...`), stow pi,
 stow the theme, `pi install npm:pi-subagents`, then add the `subagents` block to
 `~/.pi/agent/settings.json`.
 
-### Local-first model router
+### Adaptive routing (@ifi/pi-extension-adaptive-routing)
 
-`pi/.pi/agent/extensions/model-router/index.ts` registers the virtual model `router/auto`
-(Pi 1.3.0+). Select it with `/router auto` or `/model`. It prefers configured private models,
-uses task heuristics (optionally a local classifier), and automatically escalates complex work
-or repeated tool errors to OpenAI **subscription OAuth** models. It does not fall back to
-OpenAI API-key billing. `/router local-only` forbids hosted requests; controls follow the
-active session branch. The Catppuccin footer shows the physical routed model.
-
-Machine-local overrides live in `~/.pi/agent/model-router.json` (not tracked). The extension's
-[README](pi/.pi/agent/extensions/model-router/README.md) documents policies, limitations, and
-`config.example.json`. Private candidate order is configurable; resource groups prevent
-retrying aliases on the same failed machine. Routing does not manage GPU memory or scheduling.
-Automatic hosted routing may send prior file contents/history to OpenAI. Subagents do not
-inherit the parent's privacy controls automatically.
-
-Tests (no inference):
+Per-prompt model routing comes from a marketplace package, installed into user settings:
 
 ```bash
-node --experimental-strip-types --test pi/.pi/agent/extensions/model-router/tests/policy.test.ts
+pi install npm:@ifi/pi-extension-adaptive-routing
 ```
+
+Before each prompt it classifies the task (intent, complexity, tier) with the small local
+`routerModels` classifier, falling back to keyword heuristics, then switches the real model with
+`pi.setModel`, so the footer shows the routed model directly. Candidates are **every model in
+pi's registry with auth** minus `models.excluded`. Its config is machine-local at
+`~/.pi/agent/extensions/adaptive-routing/config.json`, seeded by `bootstrap.sh` from
+[config.example.json](pi/.pi/agent/extensions/adaptive-routing/config.example.json). The example
+routes by intent:
+
+| Intents | Model |
+|---------|-------|
+| quick-qna, implementation, refactor, planning | `ollama/ornith-1.5:35b-64k` |
+| research, review | `firefly/qwen3.8:27b-160k` (large context) |
+| debugging, design | `openai/gpt-5.6-terra` |
+| architecture, autonomous | `openai/gpt-6.1-sol` |
+
+Commands: `/route status|shadow|auto|off|explain|stats`. `shadow` only reports what it would pick.
+Telemetry stays local.
+
+Gotchas:
+- **Exclusion is per model ID, not per provider.** The OpenAI login exposes ~40 models, so the
+  example excludes every `openai/*` model except the two it routes to. When a pi update adds
+  models, they join the pool automatically; regenerate the list with
+  `pi --list-models | awk '$1=="openai" {print "openai/"$2}'` and drop the ones you keep.
+- **Tiers and max thinking are guessed from model names** (`gpt-5.4` → peak, other `gpt-5*` →
+  premium/xhigh, anything else incl. `gpt-6*` and local → balanced/high) and cannot be
+  configured, so steer with `intents.*.preferredModels` (+28). Because `gpt-6.1-sol` is treated as
+  `high`-max, the architecture/autonomous intents use `defaultThinking: "high"`; at the default
+  `xhigh` its thinking-fit penalty let `gpt-5.6-terra` win those intents.
+- If the subscription isn't logged in, the `openai/*` intents fall back to local models.
+- Hosted routing sends the conversation (including file contents) to OpenAI.
 
 ### Gotchas
 
@@ -406,20 +434,17 @@ node --experimental-strip-types --test pi/.pi/agent/extensions/model-router/test
 docs show only the first two; omitting the cache keys fails schema validation at startup.
 
 **`maxTokens` is carved out of `contextWindow`.** At a 32768 window, pi's default `maxTokens` of
-16384 would leave only half the window for input. Hence 8192 for the local model, leaving ~24k
-for context. Keep this in mind when changing either number — they move together.
+16384 would leave only half the window for input. Hence 16384 for the 64k local model, leaving
+~48k for context. Keep this in mind when changing either number — they move together.
 
 **Context must match what Ollama actually allocates.** pi compacts against whatever
 `contextWindow` says, so declaring more than Ollama will allocate makes it send context that
 Ollama silently truncates — the agent loses the top of its own conversation with no error.
 
-Ollama's server default is currently 32768 (`OLLAMA_CONTEXT_LENGTH`, unset here), which is
-exactly what the local model declares, so it needs no pinning. `qwen3.8:27b-160k` on firefly
-wants more than the default, so it pins `num_ctx 163840` in its own Modelfile — that is why the
-tag carries a `-160k` suffix.
-
-Note that Ollama's default has changed before (it was 4096). If it ever drops below a declared
-`contextWindow`, silent truncation returns. Verify what a model actually got:
+Ollama's server default varies by version and available memory (`OLLAMA_CONTEXT_LENGTH`, unset
+here): it has been 4096 and 32768, and Ollama 0.40.8 gave 131072 on a 36 GB Mac. So every model
+pi uses pins `num_ctx` in a derived Modelfile and carries the size as a tag suffix
+(`-160k`, `-64k`, `-8k`), with `contextWindow` set to match. Verify what a model actually got:
 
 ```bash
 ollama ps    # CONTEXT column should match contextWindow, PROCESSOR should read 100% GPU

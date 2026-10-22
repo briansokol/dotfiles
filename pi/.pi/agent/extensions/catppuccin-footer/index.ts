@@ -157,15 +157,6 @@ export default function (pi: ExtensionAPI) {
 					if (model?.reasoning && ctx.thinkingLevel !== undefined) {
 						modelDisplay = `${modelName} • thinking ${ctx.thinkingLevel}`;
 					}
-					if (model?.provider === "router" && model.id === "auto") {
-						const routed = footerData.getExtensionStatuses().get("model-router");
-						const latest = ctx.sessionManager.getBranch().findLast((entry) =>
-							entry.type === "message" && entry.message.role === "assistant" &&
-							entry.message.stopReason !== "error" && entry.message.stopReason !== "aborted");
-						const previous = latest?.type === "message" && latest.message.role === "assistant"
-							? `→ ${latest.message.provider}/${latest.message.model}` : undefined;
-						modelDisplay = `auto ${routed ?? previous ?? "(awaiting route)"}`;
-					}
 
 					// Color only the context part of the stats line (width math stays on plain text).
 					const before = statsText.slice(0, statsText.length - ctxDisplay.length); // includes trailing "  " separator

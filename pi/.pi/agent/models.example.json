@@ -21,22 +21,6 @@
             "cacheRead": 0,
             "cacheWrite": 0
           }
-        },
-        {
-          "id": "laguna-xs-2.1:128k",
-          "name": "Laguna XS 2.1 128k (firefly)",
-          "reasoning": true,
-          "input": [
-            "text"
-          ],
-          "contextWindow": 131072,
-          "maxTokens": 32768,
-          "cost": {
-            "input": 0,
-            "output": 0,
-            "cacheRead": 0,
-            "cacheWrite": 0
-          }
         }
       ]
     },
@@ -46,15 +30,15 @@
       "apiKey": "ollama",
       "models": [
         {
-          "id": "qwen3.8:27b-132k",
-          "name": "Qwen3.8 27B 132k (local)",
+          "id": "ornith-1.5:35b-64k",
+          "name": "Ornith 1.5 35B-A3B 64k (local)",
           "reasoning": true,
           "input": [
             "text",
             "image"
           ],
-          "contextWindow": 135168,
-          "maxTokens": 32768,
+          "contextWindow": 65536,
+          "maxTokens": 16384,
           "cost": {
             "input": 0,
             "output": 0,
@@ -63,15 +47,14 @@
           }
         },
         {
-          "id": "qwen3.6:35b-a3b-coding",
-          "name": "Qwen3.6 35B-A3B Coding (local)",
-          "reasoning": true,
+          "id": "qwen3:4b-instruct-8k",
+          "name": "Qwen3 4B Instruct 8k (local classifier)",
+          "reasoning": false,
           "input": [
-            "text",
-            "image"
+            "text"
           ],
-          "contextWindow": 32768,
-          "maxTokens": 8192,
+          "contextWindow": 8192,
+          "maxTokens": 2048,
           "cost": {
             "input": 0,
             "output": 0,

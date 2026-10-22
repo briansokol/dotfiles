@@ -420,6 +420,22 @@ post_stow() {
             print_skip "pi settings already configured."
         fi
     fi
+
+    # Seed machine-local pi models and adaptive-routing config from the tracked
+    # examples (a symlink here is a leftover from when models.json was stowed)
+    local example target
+    for example in models.example.json extensions/adaptive-routing/config.example.json; do
+        [[ -f "$REPO_DIR/pi/.pi/agent/$example" ]] || continue
+        target="$HOME/.pi/agent/${example/.example/}"
+        if [[ -f "$target" && ! -L "$target" ]]; then
+            print_skip "pi ${example/.example/} already exists."
+        else
+            mkdir -p "$(dirname "$target")"
+            rm -f "$target"
+            cp "$REPO_DIR/pi/.pi/agent/$example" "$target"
+            print_success "pi ${example/.example/} seeded from example."
+        fi
+    done
 }
 
 # ---------------------------------------------------------------------------
